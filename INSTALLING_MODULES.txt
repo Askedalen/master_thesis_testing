@@ -1,0 +1,5 @@
+INSTALL:
+py -m pip install -U <module> --user
+
+UNINSTALL:
+py -m pip uninstall <module>
