@@ -1,0 +1,12 @@
+lstm_matched/
+lstm_matched_h5/
+midis/
+*.pickle
+*.mid
+*.midi
+*.tar.gz
+*.zip
+*.h5
+*.hdf5
+*.pdf
+*.npy
