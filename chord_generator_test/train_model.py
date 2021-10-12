@@ -66,13 +66,7 @@ def train():
     total_train_loss = 0
     for e in range(1, epochs+1):
         print('Epoch', e, 'of', epochs)
+        hist = model.fit(training_generator, validation_data=val_generator, shuffle=False, verbose=True)
         model.reset_states()
-        for i, song in enumerate(train_data):
-            X1 = np.reshape(song[0][:-1], (-1, 1))
-            X2 = np.reshape(song[1].T[:-1],(-1, 1, 128))
-            Y = to_categorical(song[0][1:],num_classes=100)
-            hist = model.fit(x=[X1, X2], y=Y, batch_size=batch_size, shuffle=False, verbose=True)
-            model.reset_states()
-            total_train_loss += hist.history['loss'][0]
 
 train()
