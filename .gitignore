@@ -10,3 +10,6 @@ midis/
 *.hdf5
 *.pdf
 *.npy
+*.pb
+cheriell_test/automatic_music_accompaniment_master
+chord_generator_test/JamBot-master
