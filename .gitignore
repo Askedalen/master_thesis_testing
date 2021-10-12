@@ -14,3 +14,5 @@ midis/
 cheriell_test/automatic_music_accompaniment_master
 chord_generator_test/JamBot-master
 *.pyc
+*.md5
+*.whl
