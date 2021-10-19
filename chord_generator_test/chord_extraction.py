@@ -95,7 +95,7 @@ def plot_most_common_chords(num_songs=0):
     plt.savefig("most_common_chords.png")
 
 def create_chord_dict(num_songs=0):
-    data = load.load_data('combined', num_songs)
+    data = load.load_data('pianoroll', num_songs)
     all_chords = []
     for song in data:
         chroma = get_chroma(song)
@@ -104,7 +104,7 @@ def create_chord_dict(num_songs=0):
         chords_to_include = 100-1
         for bar in range(math.floor(chroma.shape[1] / steps)):
             chord = get_chord(chroma, bar, steps)
-            chord_name = get_chord_note_names(chord)
+            chord_name = get_chord_name(chord)
             all_chords.append(chord_name)
     unique_chords, counts = np.unique(np.array(all_chords), axis=0, return_counts=True)
     most_common_idx = np.argpartition(counts, -chords_to_include)[-chords_to_include:]
@@ -152,6 +152,7 @@ def create_chord_progressions(num_songs = 0):
 
 if __name__ == '__main__':
     #plot_most_common_chords(1000)
-    #create_chord_progressions(1000)
-    test = get_chord_dict()
+    create_chord_dict()
+    create_chord_progressions()
+    #test = get_chord_dict()
     print()

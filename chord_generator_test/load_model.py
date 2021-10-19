@@ -23,9 +23,13 @@ for i in range(10):
     random_song = filenames[np.random.randint(0, len(filenames))]
     random_song_midi = pickle.load(open(random_song, 'rb'))
     
-    melody = melody.T
+    melody = random_song_midi.T
+    melody_nonzero = np.nonzero(melody)[0]
+    if melody_nonzero.shape[0] == 0:
+        i -= 1
+        continue
 
-    starting_point = np.nonzero(melody)[0][0]
+    starting_point = melody_nonzero[0]
     chords_input = np.zeros((1, 1, 1))
     melody_input = np.zeros((1, 1, 128))
 
@@ -46,13 +50,10 @@ for i in range(10):
     melody_midi = mf.piano_roll_to_midi(melody.T)
     chords_4ths = chords[::4]
 
-    orig_midi_path = os.path.join(data_dir, 'test', 'chords_and_melodies', f'orig{i:02d}.mid')
     midi_path = os.path.join(data_dir, 'test', 'chords_and_melodies', f'test{i:02d}.mid')
     chord_path = os.path.join(data_dir, 'test', 'chords_and_melodies', f'test{i:02d}.txt')
 
     orig = pretty_midi.PrettyMIDI()
-    orig.instruments.append(orig_melody)
-    orig.write(orig_midi_path)
     melody_midi.write(midi_path)
     chord_file = open(chord_path, 'w')
     for chord in chords_4ths:

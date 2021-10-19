@@ -53,6 +53,7 @@ def midi_to_pickle(num_files=0):
             midi_data = pretty_midi.PrettyMIDI(file)
         except:
             print("Could not load file {}".format(file))
+            num_failed += 1
             continue
 
         key, scale_name = mf.get_key_and_scale(midi_data)
@@ -78,7 +79,6 @@ def midi_to_pickle(num_files=0):
         melody = mf.get_random_melody(midi_data_modulated)
 
         if melody is False:
-            i -= 1
             num_failed += 1
             continue
         
@@ -90,8 +90,8 @@ def midi_to_pickle(num_files=0):
             print("Finished {} songs".format(i))
         
     end_time = time.time()
-    print(f"Finisned {its} songs in {end_time - start_time} seconds")
+    print(f"Finisned {its} songs in {end_time - start_time} seconds. {num_failed} songs failed.")
 
 if __name__ == "__main__":
-    midi_to_pickle(1000)
+    midi_to_pickle(10000)
     #parse_midi()

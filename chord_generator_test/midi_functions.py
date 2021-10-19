@@ -181,6 +181,8 @@ def get_random_melody(midi_data, return_midi = False):
         inst_type = get_inst_type(inst)
         if inst_type == inst_types['MELODY']:
             candidate_instruments.append(i)
+        elif inst_type == inst_types['BASS']:
+            continue
         else:
             piano_roll = get_inst_roll(midi_data, i)
             piano_roll[piano_roll > 0] = 1

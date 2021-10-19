@@ -15,6 +15,7 @@ from generator import ChordMelodyGenerator, yield_generator_test
 import load_data
 import generator
 import math
+import time
 from config import *
 
 lstm_size = 512
@@ -65,6 +66,7 @@ def train():
     steps_per_epoch = math.floor(len(train_filenames) / batch_size)
     validation_steps = math.floor(len(val_filenames) / val_batch_size)
     print('Training...')
+    start_time = time.time()
     for e in range(1, epochs+1):
         print('Epoch', e, 'of', epochs)
         hist = model.fit(training_generator, validation_data=val_generator, epochs=1, shuffle=False, verbose=True, steps_per_epoch=steps_per_epoch, validation_steps=validation_steps)
@@ -75,6 +77,8 @@ def train():
         accuracies[0, e-1] = hist.history['accuracy'][0]
         accuracies[1, e-1] = hist.history['val_accuracy'][0]
         model.save(os.path.join(results_dir, 'models', f'epoch{e:03d}.hdf5'))
+    end_time = time.time()
+    print(f'Finished training in {end_time - start_time} seconds')
 
 def plot_results():        
     plt.figure()
