@@ -7,51 +7,84 @@ from tensorflow.keras.layers import Concatenate, add, concatenate
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import ModelCheckpoint, Callback
 from tensorflow.keras.utils import to_categorical
-from tensorflow.python.keras.backend import reshape
+from tensorflow.python.keras.backend import reshape, function
 from tensorflow.python.keras.engine import input_spec
 from tensorflow.python.keras.layers.core import Reshape
+from keras.models import load_model
 from load_data import get_trainval_filenames
-from generator import ChordMelodyGenerator, yield_generator_test
 import load_data
-import generator
+from generator import poly_data_generator
 import math
 import time
 from config import *
+from chord_extraction import get_chord_dict
+
+class ChordEmbedding:
+    def __init__(self, model_path):
+        self.model = load_model(model_path)
+        self.model.reset_states()
+        self.embed_layer_output = function([self.model.layers[0].input], [self.model.layers[0].output])
+        self.chord_to_index, self.index_to_chords = get_chord_dict()
+
+    def embed_chord(self, chord):
+        return self.embed_layer_output([[[chord]]])[0][0][0]
+
+    def embed_chords_song(self, chords):
+        embeded_chords = []
+        for chord in chords:
+            embeded_chords.append(self.embed_chord(chord))
+        return embeded_chords
+        
+
+TESTING = True
 
 lstm_size = 512
-batch_size = 32
-val_batch_size = 16
 learning_rate = 0.00001
-epochs = 100
+num_notes = 128
+embedding_size = 10
+vocabulary = 100
+
+if TESTING:
+    batch_size = 8
+    val_batch_size = 4
+    epochs = 2
+    num_songs = 40
+else:
+    batch_size = 32
+    val_batch_size = 16
+    epochs = 100
+    num_songs = 0
 
 params = {'max_steps':1000,
-          'num_notes':128,
-          'vocabulary':100}
+          'num_notes':num_notes,
+          'vocabulary':vocabulary}
 
-train_filenames, val_filenames = get_trainval_filenames()
-training_generator = yield_generator_test(train_filenames, batch_size=batch_size, **params)
-val_generator = yield_generator_test(val_filenames, batch_size=val_batch_size, **params)
+train_filenames, val_filenames = get_trainval_filenames(num_songs)
+training_generator = poly_data_generator(train_filenames, batch_size=batch_size, **params)
+val_generator = poly_data_generator(val_filenames, batch_size=val_batch_size, **params)
 optimizer = Adam(learning_rate=learning_rate)
 loss = 'categorical_crossentropy'
+chord_embedding = 
+
 print('Creating model...')
 
 #Create chord embedding
 chord_input = Input(shape=(1,))
-embedding = Embedding(100, 100)(chord_input)
+embedding = Embedding(vocabulary, embedding_size)(chord_input)
 
 #Create melody input
-melody_input = Input(shape=(1,128,))
+melody_input = Input(shape=(1,num_notes,))
 
 #Concat chord and melody input
 lstm_data = concatenate([embedding, melody_input])
-lstm_data = Reshape((-1,228))(lstm_data)
+lstm_data = Reshape((-1,num_notes+embedding_size))(lstm_data)
 
 #LSTM layer
 lstm = LSTM(lstm_size, return_sequences=True)(lstm_data)
 
 #Dense layer and activation
-time_dist = TimeDistributed(Dense(100))(lstm)
-activation = Activation('softmax')(time_dist)
+time_dist = TimeDistributed(Dense(vocabulary))(lstm)
+activation = Activation('sigmoid')(time_dist)
 
 #Create model
 model = Model(inputs=[chord_input, melody_input], outputs=activation)

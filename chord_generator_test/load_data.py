@@ -56,12 +56,15 @@ def get_trainval_chords_and_melody(num_songs = 0):
     test_set = chord_melody_data[train_count:]
     return train_set, test_set
 
-def get_chords_and_melody(filename):
+def get_chords_and_melody(filename, binary=False):
     chord_path = os.path.join(chord_dir, filename)
     melody_path = os.path.join(melody_dir, filename)
 
     chord_data = pickle.load(open(chord_path, 'rb'))
     melody_data = pickle.load(open(melody_path, 'rb'))
+
+    if binary:
+        melody_data[melody_data > 0] = 1
 
     return chord_data, melody_data
 

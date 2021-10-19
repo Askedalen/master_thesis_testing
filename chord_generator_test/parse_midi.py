@@ -8,7 +8,6 @@ import math
 import matplotlib.pyplot as plt
 import _pickle as pickle
 
-
 np.random.seed(2020)
 
 def listFiles():

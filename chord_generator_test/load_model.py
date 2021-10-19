@@ -8,10 +8,10 @@ from config import *
 import pretty_midi
 import _pickle as pickle
 
-np.random.seed(2021)
+np.random.seed(2019)
 
 num_steps = 500
-model_file = os.path.join(results_dir, 'models', 'epoch100.hdf5')
+model_file = os.path.join(results_dir, 'models', 'epoch096.hdf5')
 
 filenames = load.list_pickle_files('melodies')
 
@@ -22,6 +22,7 @@ print("Model loaded.")
 for i in range(10):
     random_song = filenames[np.random.randint(0, len(filenames))]
     random_song_midi = pickle.load(open(random_song, 'rb'))
+    random_song_midi[random_song_midi > 0] = 1
     
     melody = random_song_midi.T
     melody_nonzero = np.nonzero(melody)[0]
@@ -31,6 +32,7 @@ for i in range(10):
 
     starting_point = melody_nonzero[0]
     chords_input = np.zeros((1, 1, 1))
+    chords_input[0][0][0] = 92
     melody_input = np.zeros((1, 1, 128))
 
     print("Generating chords for song {}".format(i))
@@ -42,10 +44,9 @@ for i in range(10):
         output[0,j,0] = chords_input[0,0,0]
 
     print("Writing chords...")
-    chord_dict = chord_extraction.get_chord_dict()
-    chord_dict2 = dict((v,k) for k,v in chord_dict.items())
+    _, index_to_chord = chord_extraction.get_chord_dict()
     output = output.flatten()
-    chords = [chord_dict2[i] for i in output]
+    chords = [index_to_chord[i] for i in output]
 
     melody_midi = mf.piano_roll_to_midi(melody.T)
     chords_4ths = chords[::4]

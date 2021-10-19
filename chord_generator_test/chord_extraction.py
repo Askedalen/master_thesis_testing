@@ -123,7 +123,9 @@ def get_chord_dict():
         chord_dict = pickle.load(open('chord_dict.pickle', 'rb'))
     else:
         chord_dict = create_chord_dict()
-    return chord_dict
+    chord_to_index = chord_dict
+    index_to_chord = dict((v,k) for k,v in chord_dict.items())
+    return chord_to_index, index_to_chord
 
 def create_chord_progressions(num_songs = 0):
     files = load.list_pickle_files('pianoroll', num_songs)
