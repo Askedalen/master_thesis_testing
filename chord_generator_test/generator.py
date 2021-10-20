@@ -34,14 +34,14 @@ def chord_data_generator(song_list, batch_size = 8, max_steps=1000, num_notes=12
                 if melody_data is False:
                     melody_data = np.zeros((num_notes,num_steps))
                 chord_data = np.array(chord_data)
-                if num_steps > max_steps:
-                    X1 = np.reshape(chord_data[:-1], (-1, 1))[:max_steps,]
-                    X2 = np.reshape(melody_data.T[:-1], [-1, 1, num_notes])[:max_steps,]
-                    y = to_categorical(chord_data[1:], num_classes=vocabulary)[:max_steps,]
+                if num_steps-16 > max_steps:
+                    X1 = np.reshape(chord_data[:-16], (-1, 1))[:max_steps,]
+                    X2 = np.reshape(melody_data.T[:-16], [-1, 1, num_notes])[:max_steps,]
+                    y = to_categorical(chord_data[16:], num_classes=vocabulary)[:max_steps,]
                 else:
-                    X1[:num_steps-1] = np.reshape(chord_data[:-1], (-1, 1))
-                    X2[:num_steps-1] = np.reshape(melody_data.T[:-1], [-1, 1, num_notes])
-                    y[:num_steps-1] = to_categorical(chord_data[1:], num_classes=vocabulary)
+                    X1[:num_steps-16] = np.reshape(chord_data[:-16], (-1, 1))
+                    X2[:num_steps-16] = np.reshape(melody_data.T[:-16], [-1, 1, num_notes])
+                    y[:num_steps-16] = to_categorical(chord_data[16:], num_classes=vocabulary)
                 chord_inputs.append(X1)
                 melody_inputs.append(X2)
                 targets.append(y)

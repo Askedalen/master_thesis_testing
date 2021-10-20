@@ -96,7 +96,9 @@ def plot_most_common_chords(num_songs=0):
 
 def create_chord_dict(num_songs=0):
     data = load.load_data('pianoroll', num_songs)
+    print('Generating chord dictionary...')
     all_chords = []
+    start_time = time.time()
     for song in data:
         chroma = get_chroma(song)
 
@@ -106,15 +108,18 @@ def create_chord_dict(num_songs=0):
             chord = get_chord(chroma, bar, steps)
             chord_name = get_chord_name(chord)
             all_chords.append(chord_name)
+    end_time = time.time()
     unique_chords, counts = np.unique(np.array(all_chords), axis=0, return_counts=True)
     most_common_idx = np.argpartition(counts, -chords_to_include)[-chords_to_include:]
     most_common_chords = unique_chords[most_common_idx]
     chord_dict = dict()
     chord_dict['UNK'] = 0
+    #chord_dict['SUS'] = 1
     for chord in most_common_chords:
         chord_dict[chord] = len(chord_dict)
     
     pickle.dump(chord_dict, open('chord_dict.pickle', 'wb'))
+    print(f'Generated chord dictionary in {end_time - start_time} seconds.')
 
     return chord_dict
 
@@ -129,27 +134,29 @@ def get_chord_dict():
 
 def create_chord_progressions(num_songs = 0):
     files = load.list_pickle_files('pianoroll', num_songs)
-    chord_dict = get_chord_dict()
+    chord_dict, _ = get_chord_dict()
     for i in range(len(files)):
         file = files[i]
         midi_data = pickle.load(open(file, 'rb'))
         chroma = get_chroma(midi_data)
         
-        steps = 8
+        steps = 16
         chord_progression = np.zeros(chroma.shape[1])
         for bar in range(math.floor(chroma.shape[1] / steps)):
             chord = get_chord(chroma, bar, steps)
-            chord_name = get_chord_note_names(chord)
+            chord_name = get_chord_name(chord)
             if chord_name in chord_dict:
                 chord_index = chord_dict[chord_name]
             else:
                 chord_index = chord_dict['UNK']
             chord_progression[bar*steps:(bar+1)*steps] = chord_index
+            #chord_progression[bar*steps] = chord_index
+            #chord_progression[(bar*steps)+1:(bar+1)*steps] = chord_dict['SUS']
         filename = os.path.basename(file)
         path = os.path.join(chord_dir, filename)
         pickle.dump(chord_progression, open(path, 'wb'))
 
-        if i % 10 == 0:
+        if i % 100 == 0:
             print("Finished {} songs".format(i))
 
 if __name__ == '__main__':

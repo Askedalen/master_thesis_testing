@@ -79,7 +79,13 @@ def get_trainval_filenames(num_songs=0):
     val_set = data_files[train_count:]
     return train_set, val_set
 
+def load_midi_unmod():
+    files = []
+    data_files = [os.path.join(midi_unmod_dir, path) for path in os.listdir(midi_unmod_dir) if '.pickle' in path]
+    for file in data_files:
+        files.append(pickle.load(open(file, 'rb')))
+    print('success')
 if __name__ == "__main__":
-    
+    load_midi_unmod()
     
     print()

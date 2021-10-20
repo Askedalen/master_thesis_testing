@@ -29,6 +29,32 @@ def listFiles():
         txt.close()
     return files
 
+def store_pretty_midi():
+    files = listFiles()
+    num_failed = 0
+    
+    start_time = time.time()
+    for i in range(len(files)):
+        file = files[i]
+        filename = os.path.basename(file).replace('.mid', '.pickle')
+        midi_file = os.path.join(midi_unmod_dir, filename)
+        if os.path.exists(midi_file):
+            num_failed += 1
+            continue
+
+        try:
+            midi_data = pretty_midi.PrettyMIDI(file)
+        except:
+            print(f'Could not load file {file}')
+            continue
+        pickle.dump(midi_data, open(midi_file, 'wb'))
+
+        if i % 100 == 0:
+            print("Finished {} songs".format(i))
+
+    end_time = time.time()
+    print(f"Finisned {len(files)} songs in {end_time - start_time} seconds. {num_failed} songs failed.")
+
 def midi_to_pickle(num_files=0):
     files = listFiles()
     its = len(files)
@@ -42,7 +68,7 @@ def midi_to_pickle(num_files=0):
     for i in range(its):
         file = files[i + random_start]
         filename = os.path.basename(file).replace('.mid', '.pickle')
-        midi_file = os.path.join(midi_dir, filename)
+        midi_file = os.path.join(midi_mod_dir, filename)
         combined_file = os.path.join(pianoroll_dir, filename)
         melody_file = os.path.join(melody_dir, filename)
         if os.path.exists(melody_file):
@@ -85,12 +111,13 @@ def midi_to_pickle(num_files=0):
         pickle.dump(combined_roll, open(combined_file, 'wb'))
         pickle.dump(melody, open(melody_file, 'wb'))
 
-        if i % 10 == 0:
+        if i % 100 == 0:
             print("Finished {} songs".format(i))
         
     end_time = time.time()
     print(f"Finisned {its} songs in {end_time - start_time} seconds. {num_failed} songs failed.")
 
 if __name__ == "__main__":
-    midi_to_pickle(10000)
+    store_pretty_midi()
+    #midi_to_pickle(10000)
     #parse_midi()

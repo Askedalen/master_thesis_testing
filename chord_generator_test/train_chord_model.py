@@ -64,7 +64,7 @@ lstm_data = Reshape((-1,num_notes+embedding_size))(lstm_data)
 lstm = LSTM(lstm_size, return_sequences=True)(lstm_data)
 
 #Dense layer and activation
-time_dist = TimeDistributed(Dense(vocabulary))(lstm)
+time_dist = Dense(vocabulary)(lstm)
 activation = Activation('softmax')(time_dist)
 
 #Create model

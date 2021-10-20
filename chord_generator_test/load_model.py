@@ -11,7 +11,7 @@ import _pickle as pickle
 np.random.seed(2019)
 
 num_steps = 500
-model_file = os.path.join(results_dir, 'models', 'epoch096.hdf5')
+model_file = os.path.join(results_dir, 'models', 'epoch018.hdf5')
 
 filenames = load.list_pickle_files('melodies')
 
@@ -32,16 +32,17 @@ for i in range(10):
 
     starting_point = melody_nonzero[0]
     chords_input = np.zeros((1, 1, 1))
-    chords_input[0][0][0] = 92
+    chords_input[0][0][0] = 0
     melody_input = np.zeros((1, 1, 128))
 
     print("Generating chords for song {}".format(i))
     output = np.zeros((1,num_steps,1))
-    for j in range(num_steps):
+    output[0,:16,0] = 92
+    for j in range(num_steps-16):
         melody_input[0,0,:] = melody[j+starting_point,:]
         prediction = model.predict([chords_input, melody_input])
-        chords_input[0,0,0] = np.argmax(prediction, axis=2)
-        output[0,j,0] = chords_input[0,0,0]
+        output[0,j+16,0] = np.argmax(prediction, axis=2)
+        chords_input[0,0,0] = output[0,j,0]
 
     print("Writing chords...")
     _, index_to_chord = chord_extraction.get_chord_dict()
@@ -57,7 +58,7 @@ for i in range(10):
     orig = pretty_midi.PrettyMIDI()
     melody_midi.write(midi_path)
     chord_file = open(chord_path, 'w')
-    for chord in chords_4ths:
+    for chord in chords:
         chord_file.write(chord)
         chord_file.write('\n')
     chord_file.close()

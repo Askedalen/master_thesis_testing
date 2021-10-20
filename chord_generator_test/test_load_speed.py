@@ -5,9 +5,8 @@ import pretty_midi
 import os
 import _pickle as pickle
 import time
+from config import *
 
-midi_dir = os.path.join('chord_generator_test', 'data', 'test', 'midi')
-piano_roll_dir = os.path.join('chord_generator_test', 'data', 'test', 'pianoroll')
 
 def generate_test_files(amount):
     files = parse_midi.listFiles()
@@ -23,12 +22,12 @@ def generate_test_files(amount):
         piano_roll = parse_midi.get_piano_roll(midi_data)
 
         filename = os.path.basename(file) + ".pickle"
-        pickle.dump(midi_data, open(os.path.join(midi_dir, filename), 'wb'))
+        pickle.dump(midi_data, open(os.path.join(midi_mod_dir, filename), 'wb'))
         pickle.dump(piano_roll, open(os.path.join(piano_roll_dir, filename), 'wb'))
     print('Done generating...')
 
 def test_load_speed():
-    midi_files = [os.path.join(midi_dir, path) for path in os.listdir(midi_dir) if '.pickle' in path]  
+    midi_files = [os.path.join(midi_mod_dir, path) for path in os.listdir(midi_mod_dir) if '.pickle' in path]  
     piano_roll_files = [os.path.join(piano_roll_dir, path) for path in os.listdir(piano_roll_dir) if '.pickle' in path]  
     
     print('Starting to load MIDI data...')
@@ -62,7 +61,8 @@ def test_load_speed():
     print('midi_data=', len(midi_data), ',midi_piano_rolls=', len(midi_piano_rolls), ',piano_rolls=', len(piano_rolls))
 
 def test_load_speed2():
-    pickle_files = [os.path.join(midi_dir, path) for path in os.listdir(midi_dir) if '.pickle' in path]  
+    pickle_files = [os.path.join(midi_mod_dir, path) for path in os.listdir(midi_mod_dir) if '.pickle' in path]  
+    pickle_files = pickle_files[:1000]
     midi_raw_files = parse_midi.listFiles()
     
     print('Starting to load pickle data...')
@@ -76,7 +76,7 @@ def test_load_speed2():
     print('Starting to load MIDI data...')
     midi_start_time = time.time()
     midi_data = []
-    for i in range(len(pickle_files)):
+    for i in range(1000):
         file = midi_raw_files[i]
         try:
             midi_data.append(pretty_midi.PrettyMIDI(file))
@@ -95,5 +95,5 @@ def test_load_speed2():
 
 if __name__ == '__main__':
     #generate_test_files(1000)
-    test_load_speed()
-    #test_load_speed2()
+    #test_load_speed()
+    test_load_speed2()
