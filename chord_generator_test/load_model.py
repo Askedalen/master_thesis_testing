@@ -38,10 +38,10 @@ for i in range(10):
     print("Generating chords for song {}".format(i))
     output = np.zeros((1,num_steps,1))
     output[0,:16,0] = 92
-    for j in range(num_steps-16):
+    for j in range(num_steps):
         melody_input[0,0,:] = melody[j+starting_point,:]
         prediction = model.predict([chords_input, melody_input])
-        output[0,j+16,0] = np.argmax(prediction, axis=2)
+        output[0,j,0] = np.argmax(prediction, axis=2)
         chords_input[0,0,0] = output[0,j,0]
 
     print("Writing chords...")
