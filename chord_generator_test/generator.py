@@ -7,12 +7,14 @@ from numpy.lib import utils
 import pretty_midi
 from tensorflow.python.keras.utils.np_utils import to_categorical
 from tensorflow.python.module.module import Module
+from load_data import get_trainval_filenames
 import load_data
 import tensorflow.keras.utils
 
 np.random.seed(2021)
 
 def chord_data_generator(song_list, batch_size = 8, max_steps=1000, num_notes=128, vocabulary=100):
+    max_steps = math.floor(max_steps / 16)
     chord_dim = (max_steps, 1)
     mel_dim = (max_steps, 1, num_notes)
     target_dim = (max_steps, vocabulary)
@@ -30,19 +32,21 @@ def chord_data_generator(song_list, batch_size = 8, max_steps=1000, num_notes=12
                 y = np.zeros(target_dim, dtype=int)
 
                 chord_data, melody_data = load_data.get_chords_and_melody(file, binary=True)
+                #chord_data = chord_data[::16]
                 num_steps = chord_data.shape[0]
                 if melody_data is False:
                     melody_data = np.zeros((num_notes,num_steps))
                 chord_data = np.array(chord_data)
-                if num_steps-16 > max_steps:
-                    X1 = np.reshape(chord_data[:-16], (-1, 1))[:max_steps,]
-                    X2 = np.reshape(melody_data.T[:-16], [-1, 1, num_notes])[:max_steps,]
-                    y = to_categorical(chord_data[16:], num_classes=vocabulary)[:max_steps,]
+                if num_steps > max_steps:
+                    X1 = np.reshape(chord_data[:-1], (-1, 1))[:max_steps,]
+                    X2 = np.reshape(melody_data.T[:-1], [-1, 1, num_notes])[:max_steps,]
+                    y = to_categorical(chord_data[1:], num_classes=vocabulary)[:max_steps,]
                 else:
-                    X1[:num_steps-16] = np.reshape(chord_data[:-16], (-1, 1))
-                    X2[:num_steps-16] = np.reshape(melody_data.T[:-16], [-1, 1, num_notes])
-                    y[:num_steps-16] = to_categorical(chord_data[16:], num_classes=vocabulary)
+                    X1[:num_steps-1] = np.reshape(chord_data[:-1], (-1, 1))
+                    X2[:num_steps-1] = np.reshape(melody_data.T[:-1], [-1, 1, num_notes])
+                    y[:num_steps-1] = to_categorical(chord_data[1:], num_classes=vocabulary)
                 chord_inputs.append(X1)
+                #X2 = np.reshape(X2, (-1, 16, num_notes))
                 melody_inputs.append(X2)
                 targets.append(y)
 
@@ -79,7 +83,7 @@ def poly_data_generator(song_list, batch_size = 8, max_steps=1000, num_notes=128
                     y = to_categorical(chord_data[1:], num_classes=vocabulary)[:max_steps,]
                 else:
                     X1[:num_steps-1] = np.reshape(chord_data[:-1], (-1, 1))
-                    X2[:num_steps-1] = np.reshape(melody_data.T[:-1], [-1, 1, num_notes])
+                    X2[:num_steps-1] = np.reshape(melody_data.T[:-1], (-1, 1, num_notes))
                     y[:num_steps-1] = to_categorical(chord_data[1:], num_classes=vocabulary)
                 chord_inputs.append(X1)
                 melody_inputs.append(X2)
@@ -89,3 +93,10 @@ def poly_data_generator(song_list, batch_size = 8, max_steps=1000, num_notes=128
             X2_out = np.array(melody_inputs)
             y_out = np.array(targets)
             yield [X1_out, X2_out], y_out
+
+
+if __name__ == '__main__':
+    filenames, _ = get_trainval_filenames(10)
+    test_generator = chord_data_generator(filenames, batch_size=1)
+    for file in test_generator:
+        print(file.shape)
