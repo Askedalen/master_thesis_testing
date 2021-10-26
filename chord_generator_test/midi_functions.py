@@ -5,10 +5,10 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 import pickle
-import parse_midi
 from config import *
 
 inst_types = {'DRUM':0, 'BASS':1, 'GUITAR':2, 'PIANO':3, 'VOCAL':4, 'MELODY':5, 'OTHER':6}
+notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 def searchName(keys, strings):
     for s in strings:
@@ -79,7 +79,58 @@ def modulate(midi_data, num_steps):
         if not instrument.is_drum:
             for note in instrument.notes:
                 note.pitch -= num_steps
+                if note.pitch < 0:
+                    note.pitch += 12
+                elif note.pitch > 127:
+                    note.pitch -= 12
     return midi_data
+
+def get_chord(chroma, bar, steps, notes_in_chord=3):
+    hist = np.sum(chroma[:, bar*steps:(bar+1)*steps], axis=1)
+    most_common_notes = np.argpartition(hist, -notes_in_chord)[-notes_in_chord:]
+    chord = np.zeros(12)
+    chord[most_common_notes] = 1
+    return chord
+
+def get_chord_note_names(chord):
+    string_name = ""
+    for i in range(len(chord)):
+            if chord[i]: string_name += notes[i]
+    return string_name
+
+def get_chord_name(chord):
+    major = [0, 4, 7]
+    minor = [0, 3, 7]
+    sus2  = [0, 2, 7]
+    sus4  = [0, 5, 7]
+    minb5 = [0, 3, 6]
+
+    chord_names = []
+
+    chord_shifted = [[i, np.roll(chord, -i)] for i in range(len(chord)) if chord[i]]
+    for c in chord_shifted:
+        chord_name = notes[c[0]]
+        if   (c[1][major]).all(): chord_name += ""
+        elif (c[1][minor]).all(): chord_name += "m"
+        else:
+            if   (c[1][sus2] ).all(): chord_name += "sus2"
+            elif (c[1][sus4] ).all(): chord_name += "sus4"
+            elif (c[1][minb5]).all(): chord_name += "mb5"
+            else: chord_name = ""
+
+        if chord_name != "":
+            if   c[1][10]: chord_name += "7"
+            elif c[1][11]: chord_name += "maj7"
+        chord_names.append(chord_name)
+    names = [n for n in chord_names if n]
+
+    if len(names) == 0:
+        string_name = get_chord_note_names(chord)
+    else:
+        string_name = names[0]
+    return string_name
+
+    
 
 def get_key_and_scale(midi_data):
     chroma = get_chroma(midi_data)
@@ -206,6 +257,24 @@ def get_random_melody(midi_data, return_midi = False):
         return get_inst_roll(midi_data, rand_inst), midi_data.instruments[rand_inst]
     else:
         return get_inst_roll(midi_data, rand_inst)
+
+def get_chord_progression(midi_data, chord_dict=None):
+    chroma = get_chroma(midi_data)
+    chord_interval = 16
+    chord_progression = []
+    for bar in range(math.floor(chroma.shape[1] / chord_interval)):
+        chord = get_chord(chroma, bar, chord_interval)
+        chord_name = get_chord_name(chord)
+        if chord_dict is not None:
+            if chord_name in chord_dict:
+                chord_index = chord_dict[chord_name]
+            else:
+                chord_index = chord_dict['UNK']
+            chord_progression.append(chord_index)
+        else:
+            chord_progression.append(chord_name)
+    return np.array(chord_progression)
+    
 
 if __name__ == "__main__":
     #get_inst_type(None)

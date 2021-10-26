@@ -13,90 +13,53 @@ import tensorflow.keras.utils
 
 np.random.seed(2021)
 
-def chord_data_generator(song_list, batch_size = 8, max_steps=1000, num_notes=128, vocabulary=100):
-    max_steps = math.floor(max_steps / 16)
-    chord_dim = (max_steps, 1)
-    mel_dim = (max_steps, 1, num_notes)
-    target_dim = (max_steps, vocabulary)
-    num_batches = math.floor(len(song_list) / batch_size)
+def chord_data_generator(song_list, batch_size = 8, max_steps=8, chord_interval=16, num_notes=128, vocabulary=100, infinite=True):
+    chord_dim = (max_steps, 1) # Dimension for Input1
+    mel_dim = (max_steps, chord_interval, num_notes) # Dimension for Input2
+    target_dim = (max_steps, vocabulary) # Dimension for Output
     while True:
         np.random.shuffle(song_list)
-        for batch in range(num_batches):
-            chord_inputs = []
-            melody_inputs = []
-            targets = []
-            batch_songs = song_list[batch*batch_size:((batch+1)*batch_size)]
-            for file in batch_songs:
-                X1 = np.zeros(chord_dim, dtype=int)
-                X2 = np.zeros(mel_dim, dtype=int)
-                y = np.zeros(target_dim, dtype=int)
+        batch_chord_inputs = []
+        batch_melody_inputs = []
+        batch_targets = []
+        for song in song_list:
+            current_chords, current_melody = load_data.get_chords_and_melody(song, binary=True)
 
-                chord_data, melody_data = load_data.get_chords_and_melody(file, binary=True)
-                #chord_data = chord_data[::16]
-                num_steps = chord_data.shape[0]
-                if melody_data is False:
-                    melody_data = np.zeros((num_notes,num_steps))
-                chord_data = np.array(chord_data)
-                if num_steps > max_steps:
-                    X1 = np.reshape(chord_data[:-1], (-1, 1))[:max_steps,]
-                    X2 = np.reshape(melody_data.T[:-1], [-1, 1, num_notes])[:max_steps,]
-                    y = to_categorical(chord_data[1:], num_classes=vocabulary)[:max_steps,]
-                else:
-                    X1[:num_steps-1] = np.reshape(chord_data[:-1], (-1, 1))
-                    X2[:num_steps-1] = np.reshape(melody_data.T[:-1], [-1, 1, num_notes])
-                    y[:num_steps-1] = to_categorical(chord_data[1:], num_classes=vocabulary)
-                chord_inputs.append(X1)
-                #X2 = np.reshape(X2, (-1, 16, num_notes))
-                melody_inputs.append(X2)
-                targets.append(y)
+            num_sequences = math.floor(current_chords.shape[0] / max_steps)
+            
+            for i in range(num_sequences):
+                current_chords = np.array(current_chords)
+                X1 = current_chords[:-1][i*max_steps:(i+1)*max_steps,]
+                X1 = np.reshape(X1, (chord_dim))
+                X2 = current_melody[:-1][i*max_steps:(i+1)*max_steps,]
+                y = to_categorical(current_chords[1:], num_classes=vocabulary)[i*max_steps:(i+1)*max_steps,]
+                batch_chord_inputs.append(X1)
+                batch_melody_inputs.append(X2)
+                batch_targets.append(y)
 
-            X1_out = np.array(chord_inputs)
-            X2_out = np.array(melody_inputs)
-            y_out = np.array(targets)
-            yield [X1_out, X2_out], y_out
+                if len(batch_chord_inputs) == batch_size:
+                    X1_out = np.array(batch_chord_inputs)
+                    X2_out = np.array(batch_melody_inputs)
+                    y_out = np.array(batch_targets)
+                    print(X1_out.shape, X2_out.shape, y_out.shape)
+                    yield [X1_out, X2_out], y_out
+                    batch_chord_inputs = []
+                    batch_melody_inputs = []
+                    batch_targets = []
+        if not infinite:
+            break
 
-def poly_data_generator(song_list, batch_size = 8, max_steps=1000, num_notes=128, vocabulary=100):
-    chord_dim = (max_steps, 1)
-    mel_dim = (max_steps, 1, num_notes)
-    target_dim = (max_steps, vocabulary)
-    num_batches = math.floor(len(song_list) / batch_size)
-    while True:
-        np.random.shuffle(song_list)
-        for batch in range(num_batches):
-            chord_inputs = []
-            melody_inputs = []
-            targets = []
-            batch_songs = song_list[batch*batch_size:((batch+1)*batch_size)]
-            for file in batch_songs:
-                X1 = np.zeros(chord_dim, dtype=int)
-                X2 = np.zeros(mel_dim, dtype=int)
-                y = np.zeros(target_dim, dtype=int)
-
-                chord_data, melody_data = load_data.get_chords_and_melody(file, binary=True)
-                num_steps = chord_data.shape[0]
-                if melody_data is False:
-                    melody_data = np.zeros((num_notes,num_steps))
-                chord_data = np.array(chord_data)
-                if num_steps > max_steps:
-                    X1 = np.reshape(chord_data[:-1], (-1, 1))[:max_steps,]
-                    X2 = np.reshape(melody_data.T[:-1], [-1, 1, num_notes])[:max_steps,]
-                    y = to_categorical(chord_data[1:], num_classes=vocabulary)[:max_steps,]
-                else:
-                    X1[:num_steps-1] = np.reshape(chord_data[:-1], (-1, 1))
-                    X2[:num_steps-1] = np.reshape(melody_data.T[:-1], (-1, 1, num_notes))
-                    y[:num_steps-1] = to_categorical(chord_data[1:], num_classes=vocabulary)
-                chord_inputs.append(X1)
-                melody_inputs.append(X2)
-                targets.append(y)
-
-            X1_out = np.array(chord_inputs)
-            X2_out = np.array(melody_inputs)
-            y_out = np.array(targets)
-            yield [X1_out, X2_out], y_out
-
+def count_steps(filenames, batch_size = 8, **params):
+    generator = chord_data_generator(filenames, batch_size=8, infinite=False, **params)
+    num_batches = 0
+    for data in generator:
+        num_batches += 1
+    return num_batches
 
 if __name__ == '__main__':
-    filenames, _ = get_trainval_filenames(10)
-    test_generator = chord_data_generator(filenames, batch_size=1)
-    for file in test_generator:
-        print(file.shape)
+    #filenames, _ = get_trainval_filenames()
+    #test_generator = chord_data_generator(filenames, batch_size=4)
+    #for [input1, input2], output in test_generator:
+    #    print(input1.shape, input2.shape, output.shape)
+    train_data, _ = load_data.get_trainval_filenames()
+    print(count_steps(train_data))

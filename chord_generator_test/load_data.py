@@ -7,7 +7,6 @@ import time
 import matplotlib.pyplot as plt
 import math
 import midi_functions as mf
-import parse_midi
 
 def load_data(subpath, num_songs=0, return_filenames=False):
     data_path = os.path.join(data_dir, subpath)

@@ -2,7 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Dense, LSTM, Activation, Embedding, Input, TimeDistributed
+from tensorflow.keras.layers import Dense, LSTM, Activation, Embedding, Input, TimeDistributed, Conv1D, Conv2D
 from tensorflow.keras.layers import Concatenate, add, concatenate
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import ModelCheckpoint, Callback
@@ -12,7 +12,7 @@ from tensorflow.python.keras.engine import input_spec
 from tensorflow.python.keras.layers.core import Reshape
 from load_data import get_trainval_filenames
 import load_data
-from generator import chord_data_generator
+from generator import chord_data_generator, count_steps
 import math
 import time
 from config import *
@@ -24,6 +24,8 @@ learning_rate = 0.00001
 num_notes = 128
 embedding_size = 10
 vocabulary = 100
+max_steps = 8
+chord_interval = 16
 
 if TESTING:
     batch_size = 8
@@ -32,17 +34,22 @@ if TESTING:
     num_songs = 40
     verbose = 1
 else:
-    batch_size = 32
-    val_batch_size = 16
+    batch_size = 16
+    val_batch_size = 8
     epochs = 100
     num_songs = 0
     verbose = 2
 
-params = {'max_steps':1000,
+params = {'max_steps':8,
+          'chord_interval':16,
           'num_notes':num_notes,
           'vocabulary':vocabulary}
 
 train_filenames, val_filenames = get_trainval_filenames(num_songs)
+print(f'Counting steps for {len(train_filenames) + len(val_filenames)} files')
+training_steps = count_steps(train_filenames, batch_size, **params)
+val_steps = count_steps(val_filenames, val_batch_size, **params)
+print(f'Training steps: {training_steps} \r\nVal steps: {val_steps}')
 training_generator = chord_data_generator(train_filenames, batch_size=batch_size, **params)
 val_generator = chord_data_generator(val_filenames, batch_size=val_batch_size, **params)
 optimizer = Adam(learning_rate=learning_rate)
@@ -50,14 +57,15 @@ loss = 'categorical_crossentropy'
 print('Creating model...')
 
 #Create chord embedding
-chord_input = Input(shape=(1,))
+chord_input = Input(shape=(1))
 embedding = Embedding(vocabulary, embedding_size)(chord_input)
 
 #Create melody input
-melody_input = Input(shape=(1,num_notes,))
+melody_input = Input(shape=(chord_interval,num_notes,))
+convLayer = Conv1D(num_notes, chord_interval, input_shape=(chord_interval, num_notes))(melody_input)
 
 #Concat chord and melody input
-lstm_data = concatenate([embedding, melody_input])
+lstm_data = concatenate([embedding, convLayer])
 lstm_data = Reshape((-1,num_notes+embedding_size))(lstm_data)
 
 #LSTM layer
@@ -77,13 +85,11 @@ losses = np.zeros((2, epochs))
 accuracies = np.zeros((2, epochs))
 
 def train():
-    steps_per_epoch = math.floor(len(train_filenames) / batch_size)
-    validation_steps = math.floor(len(val_filenames) / val_batch_size)
     print('Training...')
     start_time = time.time()
     for e in range(1, epochs+1):
         print('Epoch', e, 'of', epochs)
-        hist = model.fit(training_generator, validation_data=val_generator, epochs=1, shuffle=False, verbose=verbose, steps_per_epoch=steps_per_epoch, validation_steps=validation_steps)
+        hist = model.fit(training_generator, validation_data=val_generator, epochs=1, shuffle=False, verbose=verbose, steps_per_epoch=training_steps, validation_steps=val_steps)
         model.reset_states()
 
         losses[0, e-1] = hist.history['loss'][0]
