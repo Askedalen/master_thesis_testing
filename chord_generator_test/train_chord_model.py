@@ -18,6 +18,7 @@ import time
 from config import *
 
 TESTING = True
+RANDOM = False
 
 lstm_size = 512
 learning_rate = 0.00001
@@ -34,8 +35,8 @@ if TESTING:
     num_songs = 40
     verbose = 1
 else:
-    batch_size = 16
-    val_batch_size = 8
+    batch_size = 32
+    val_batch_size = 16
     epochs = 100
     num_songs = 0
     verbose = 2
@@ -43,9 +44,10 @@ else:
 params = {'max_steps':8,
           'chord_interval':16,
           'num_notes':num_notes,
-          'vocabulary':vocabulary}
+          'vocabulary':vocabulary,
+          'rand_data':RANDOM}
 
-train_filenames, val_filenames = get_trainval_filenames(num_songs)
+train_filenames, val_filenames = get_trainval_filenames(num_songs, rand_data=RANDOM)
 print(f'Counting steps for {len(train_filenames) + len(val_filenames)} files')
 training_steps = count_steps(train_filenames, batch_size, **params)
 val_steps = count_steps(val_filenames, val_batch_size, **params)

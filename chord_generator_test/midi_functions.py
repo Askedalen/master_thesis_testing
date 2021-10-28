@@ -87,6 +87,8 @@ def modulate(midi_data, num_steps):
 
 def get_chord(chroma, bar, steps, notes_in_chord=3):
     hist = np.sum(chroma[:, bar*steps:(bar+1)*steps], axis=1)
+    if np.max(hist) == 0:
+        return hist
     most_common_notes = np.argpartition(hist, -notes_in_chord)[-notes_in_chord:]
     chord = np.zeros(12)
     chord[most_common_notes] = 1
@@ -106,6 +108,9 @@ def get_chord_name(chord):
     minb5 = [0, 3, 6]
 
     chord_names = []
+
+    if np.max(chord) == 0:
+        return 'UNK'
 
     chord_shifted = [[i, np.roll(chord, -i)] for i in range(len(chord)) if chord[i]]
     for c in chord_shifted:

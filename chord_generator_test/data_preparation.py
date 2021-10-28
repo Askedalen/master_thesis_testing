@@ -1,3 +1,5 @@
+from numpy import random
+from tensorflow.python.keras.utils.np_utils import to_categorical
 from config import *
 import pretty_midi
 import load_data
@@ -159,14 +161,14 @@ def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=128):
         if melody is False:
             num_failed += 1
             continue
-
+        #melody = melody.T
         # Add padding for end of melody so length is divisible by chord_interval
         melody_rest_steps = chord_interval - melody.shape[0] % chord_interval
         if melody_rest_steps > 0:
-            melody = np.resize(melody, (chords.shape[0], chord_interval, num_notes))
+            melody = np.resize(melody.T, (chords.shape[0], chord_interval, num_notes))
             melody[-1, -melody_rest_steps:,] = 0
         else:
-            melody = np.reshape(melody, (-1, chord_interval, num_notes))
+            melody = np.reshape(melody.T, (-1, chord_interval, num_notes))
 
         #Add padding for end of song so length is divisible by max_steps
         chords_rest_steps = (max_steps - (chords.shape[0] % max_steps)) + 1
@@ -186,8 +188,27 @@ def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=128):
     end_time = time.time()
     print(f"Finished {len(files)} songs in {end_time - start_time} seconds. {num_failed} songs failed.")
 
+def create_random_data(num_songs):
+    start_time = time.time()
+    print('Generating random chord sequence...')
+    random_chord_sequence  = np.random.randint(0,  99, (num_songs, 65))
+    print('Generating random melody...')
+    random_melody_sequence = np.random.randint(0, 127, (num_songs, 65, 16, 1))
+    random_melody_sequence = to_categorical(random_melody_sequence, num_classes=128)
+
+    print('Writing to files...')
+    for i in range(num_songs):
+        chords_path = os.path.join(random_data_dir, 'chords', f'{i:05d}.pickle')
+        melody_path = os.path.join(random_data_dir, 'melodies', f'{i:05d}.pickle')
+
+        pickle.dump(random_chord_sequence[i], open(chords_path, 'wb'))
+        pickle.dump(random_melody_sequence[i], open(melody_path, 'wb'))
+    end_time = time.time()
+    print(f'Generated {num_songs} random songs in {end_time - start_time} seconds.')
+
 if __name__ == "__main__":
+    #create_random_data(1000)
     #midi_to_pickle()
-    normalize_keys()
-    create_chord_dict()
+    #normalize_keys()
+    #create_chord_dict()
     create_ML_data()

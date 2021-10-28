@@ -55,9 +55,13 @@ def get_trainval_chords_and_melody(num_songs = 0):
     test_set = chord_melody_data[train_count:]
     return train_set, test_set
 
-def get_chords_and_melody(filename, binary=False):
-    chord_path = os.path.join(chord_dir, filename)
-    melody_path = os.path.join(melody_dir, filename)
+def get_chords_and_melody(filename, binary=False, rand_data=False):
+    if rand_data:
+        chord_path = os.path.join(random_data_dir, 'chords', filename)
+        melody_path = os.path.join(random_data_dir, 'melodies', filename)
+    else:
+        chord_path = os.path.join(chord_dir, filename)
+        melody_path = os.path.join(melody_dir, filename)
 
     chord_data = pickle.load(open(chord_path, 'rb'))
     melody_data = pickle.load(open(melody_path, 'rb'))
@@ -67,8 +71,11 @@ def get_chords_and_melody(filename, binary=False):
 
     return chord_data, melody_data
 
-def get_trainval_filenames(num_songs=0):
-    data_path = os.path.join(data_dir, 'melodies')
+def get_trainval_filenames(num_songs=0, rand_data=False):
+    if rand_data:
+        data_path = os.path.join(random_data_dir, 'melodies')
+    else:
+        data_path = os.path.join(data_dir, 'melodies')
     data_files = [path for path in os.listdir(data_path) if '.pickle' in path]
     if num_songs > 0:
         data_files = data_files[:num_songs]

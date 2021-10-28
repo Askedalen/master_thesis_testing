@@ -13,17 +13,15 @@ import tensorflow.keras.utils
 
 np.random.seed(2021)
 
-def chord_data_generator(song_list, batch_size = 8, max_steps=8, chord_interval=16, num_notes=128, vocabulary=100, infinite=True):
+def chord_data_generator(song_list, batch_size = 8, max_steps=8, chord_interval=16, num_notes=128, vocabulary=100, infinite=True, rand_data=False):
     chord_dim = (max_steps, 1) # Dimension for Input1
-    mel_dim = (max_steps, chord_interval, num_notes) # Dimension for Input2
-    target_dim = (max_steps, vocabulary) # Dimension for Output
     while True:
         np.random.shuffle(song_list)
         batch_chord_inputs = []
         batch_melody_inputs = []
         batch_targets = []
         for song in song_list:
-            current_chords, current_melody = load_data.get_chords_and_melody(song, binary=True)
+            current_chords, current_melody = load_data.get_chords_and_melody(song, binary=True, rand_data=rand_data)
 
             num_sequences = math.floor(current_chords.shape[0] / max_steps)
             
@@ -41,7 +39,7 @@ def chord_data_generator(song_list, batch_size = 8, max_steps=8, chord_interval=
                     X1_out = np.array(batch_chord_inputs)
                     X2_out = np.array(batch_melody_inputs)
                     y_out = np.array(batch_targets)
-                    print(X1_out.shape, X2_out.shape, y_out.shape)
+                    #print(X1_out.shape, X2_out.shape, y_out.shape)
                     yield [X1_out, X2_out], y_out
                     batch_chord_inputs = []
                     batch_melody_inputs = []
