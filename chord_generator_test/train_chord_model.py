@@ -74,8 +74,8 @@ lstm_data = Reshape((-1,num_notes+embedding_size))(lstm_data)
 lstm = LSTM(lstm_size, return_sequences=True)(lstm_data)
 
 #Dense layer and activation
-time_dist = Dense(vocabulary)(lstm)
-activation = Activation('softmax')(time_dist)
+dense = Dense(vocabulary)(lstm)
+activation = Activation('softmax')(dense)
 
 #Create model
 model = Model(inputs=[chord_input, melody_input], outputs=activation)

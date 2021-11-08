@@ -16,4 +16,4 @@ chord_generator_test/JamBot-master
 *.pyc
 *.md5
 *.whl
-chord_generator_test/data/test/chords_and_melodies
+chord_generator_test/results/chords_and_melodies

@@ -5,8 +5,28 @@ from numpy.lib.npyio import load
 import _pickle as pickle
 import time
 import matplotlib.pyplot as plt
+from keras.models import load_model
+from tensorflow.python.keras.backend import reshape, function
 import math
+
+from data_preparation import get_chord_dict
 import midi_functions as mf
+
+class ChordEmbedding:
+    def __init__(self, model_path):
+        self.model = load_model(model_path)
+        self.model.reset_states()
+        self.embed_layer_output = function([self.model.layers[2].input], [self.model.layers[2].output])
+        self.chord_to_index, self.index_to_chords = get_chord_dict()
+
+    def embed_chord(self, chord):
+        return self.embed_layer_output([[[chord]]])[0]
+
+    def embed_chords_song(self, chords):
+        embeded_chords = []
+        for chord in chords:
+            embeded_chords.append(self.embed_chord(int(chord)))
+        return np.array(embeded_chords)
 
 def load_data(subpath, num_songs=0, return_filenames=False):
     data_path = os.path.join(data_dir, subpath)
@@ -85,13 +105,46 @@ def get_trainval_filenames(num_songs=0, rand_data=False):
     val_set = data_files[train_count:]
     return train_set, val_set
 
+def get_instruments(filename, binary=False, rand_data=False):
+    midi_path = os.path.join(midi_mod_dir, filename)
+    midi_data = pickle.load(open(midi_path, 'rb'))
+
+    pr_shape = mf.get_piano_roll(midi_data).T.shape
+
+    drum_track = np.zeros(pr_shape)
+    bass_track = np.zeros(pr_shape)
+    guit_track = np.zeros(pr_shape)
+    pian_track = np.zeros(pr_shape)
+    
+    for i in range(len(midi_data.instruments)):
+        inst_name = mf.get_inst_type(midi_data.instruments[i])
+        if inst_name == mf.inst_types['DRUM']:
+            drum_track[:] += mf.get_inst_roll(midi_data, i).T[:]
+        elif inst_name == mf.inst_types['BASS']:
+            bass_track[:] += mf.get_inst_roll(midi_data, i).T[:]
+        elif inst_name == mf.inst_types['GUITAR']:
+            guit_track[:] += mf.get_inst_roll(midi_data, i).T[:]
+        elif inst_name == mf.inst_types['PIANO']:
+            pian_track[:] += mf.get_inst_roll(midi_data, i).T[:]
+        else:
+            continue
+    
+    comb_track = np.concatenate((drum_track, bass_track, guit_track, pian_track), axis=1)
+    if binary:
+        comb_track[comb_track > 0] = 1
+    
+    return comb_track
+
+
 def load_midi_unmod():
     files = []
     data_files = [os.path.join(midi_unmod_dir, path) for path in os.listdir(midi_unmod_dir) if '.pickle' in path]
     for file in data_files:
         files.append(pickle.load(open(file, 'rb')))
     print('success')
+
+
+
 if __name__ == "__main__":
-    load_midi_unmod()
-    
+    get_instruments('f6900a405ca19f9c9e2e04939a62e504.pickle')
     print()

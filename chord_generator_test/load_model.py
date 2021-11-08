@@ -55,8 +55,8 @@ for i in range(10):
     pianoroll_melody = np.reshape(melody, (-1, 128)).T
     melody_midi = mf.piano_roll_to_midi(pianoroll_melody)
 
-    midi_path = os.path.join(data_dir, 'test', 'chords_and_melodies', f'test{i:02d}.mid')
-    chord_path = os.path.join(data_dir, 'test', 'chords_and_melodies', f'test{i:02d}.txt')
+    midi_path = os.path.join(results_dir, 'chords_and_melodies', f'test{i:02d}.mid')
+    chord_path = os.path.join(results_dir, 'chords_and_melodies', f'test{i:02d}.txt')
 
     orig = pretty_midi.PrettyMIDI()
     melody_midi.write(midi_path)

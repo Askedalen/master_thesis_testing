@@ -14,23 +14,17 @@ import _pickle as pickle
 np.random.seed(2020)
 
 def list_midi_files():
-    files = []
-    if os.path.exists('song_list.txt'):
-        txt = open("song_list.txt", "r")
-        for line in txt:
-            files.append(line.replace('\n', ''))
-        txt.close()
+    song_list = []
+    if os.path.exists('song_list.pickle'):
+        song_list = pickle.load(open("song_list.txt", "rb"))
     else:
-        txt = open("song_list.txt", "w")
         path = "lmd_matched"
         for r, d, f in os.walk(path):
             for file in f:
                 if '.mid' in file:
-                    files.append(os.path.join(r, file))
-                    txt.write(os.path.join(r, file))
-                    txt.write("\n")
-        txt.close()
-    return 
+                    song_list.append(os.path.join(r, file))
+        pickle.dump(song_list, open("song_list.txt", "wb"))
+    return song_list
 
 
 def midi_to_pickle():
@@ -148,7 +142,6 @@ def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=128):
     for i in range(len(files)):
         file = files[i]
         filename = os.path.basename(file)
-        midi_file = os.path.join(midi_mod_dir, filename)
         chords_file = os.path.join(chord_dir, filename)
         melody_file = os.path.join(melody_dir, filename)
         if os.path.exists(melody_file):
@@ -211,4 +204,6 @@ if __name__ == "__main__":
     #midi_to_pickle()
     #normalize_keys()
     #create_chord_dict()
-    create_ML_data()
+    #create_ML_data()
+    list_midi_files()
+    print()

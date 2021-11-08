@@ -13,58 +13,57 @@ from tensorflow.python.keras.layers.core import Reshape
 from keras.models import load_model
 from load_data import get_trainval_filenames
 import load_data
-from generator import poly_data_generator
+from generator import poly_data_generator, count_steps
 import math
 import time
 from config import *
-from chord_extraction import get_chord_dict
+from data_preparation import get_chord_dict
 
-class ChordEmbedding:
-    def __init__(self, model_path):
-        self.model = load_model(model_path)
-        self.model.reset_states()
-        self.embed_layer_output = function([self.model.layers[0].input], [self.model.layers[0].output])
-        self.chord_to_index, self.index_to_chords = get_chord_dict()
 
-    def embed_chord(self, chord):
-        return self.embed_layer_output([[[chord]]])[0][0][0]
 
-    def embed_chords_song(self, chords):
-        embeded_chords = []
-        for chord in chords:
-            embeded_chords.append(self.embed_chord(chord))
-        return embeded_chords
-        
 
 TESTING = True
+RANDOM = False
+
+model_path = os.path.join(results_dir, 'models', 'epoch085.hdf5')
 
 lstm_size = 512
 learning_rate = 0.00001
 num_notes = 128
 embedding_size = 10
 vocabulary = 100
+max_steps = 8
+chord_interval = 16
 
 if TESTING:
     batch_size = 8
     val_batch_size = 4
     epochs = 2
     num_songs = 40
+    verbose = 1
 else:
     batch_size = 32
     val_batch_size = 16
     epochs = 100
     num_songs = 0
+    verbose = 2
 
-params = {'max_steps':1000,
+params = {'max_steps':128,
+          'chord_interval':16,
           'num_notes':num_notes,
-          'vocabulary':vocabulary}
+          'vocabulary':vocabulary,
+          'rand_data':RANDOM}
 
-train_filenames, val_filenames = get_trainval_filenames(num_songs)
-training_generator = poly_data_generator(train_filenames, batch_size=batch_size, **params)
-val_generator = poly_data_generator(val_filenames, batch_size=val_batch_size, **params)
+train_filenames, val_filenames = get_trainval_filenames(num_songs, rand_data=RANDOM)
+chord_embedding = load_data.ChordEmbedding(model_path)
+print(f'Counting steps for {len(train_filenames) + len(val_filenames)} files')
+training_steps = count_steps(train_filenames, batch_size, **params)
+val_steps = count_steps(val_filenames, val_batch_size, **params)
+print(f'Training steps: {training_steps} \r\nVal steps: {val_steps}')
+training_generator = poly_data_generator(train_filenames, chord_embedding, batch_size=batch_size, **params)
+val_generator = poly_data_generator(val_filenames, chord_embedding, batch_size=val_batch_size, **params)
 optimizer = Adam(learning_rate=learning_rate)
 loss = 'categorical_crossentropy'
-chord_embedding = 
 
 print('Creating model...')
 
@@ -83,8 +82,8 @@ lstm_data = Reshape((-1,num_notes+embedding_size))(lstm_data)
 lstm = LSTM(lstm_size, return_sequences=True)(lstm_data)
 
 #Dense layer and activation
-time_dist = TimeDistributed(Dense(vocabulary))(lstm)
-activation = Activation('sigmoid')(time_dist)
+dense = Dense(vocabulary)(lstm)
+activation = Activation('sigmoid')(dense)
 
 #Create model
 model = Model(inputs=[chord_input, melody_input], outputs=activation)
@@ -96,8 +95,6 @@ losses = np.zeros((2, epochs))
 accuracies = np.zeros((2, epochs))
 
 def train():
-    steps_per_epoch = math.floor(len(train_filenames) / batch_size)
-    validation_steps = math.floor(len(val_filenames) / val_batch_size)
     print('Training...')
     start_time = time.time()
     for e in range(1, epochs+1):
