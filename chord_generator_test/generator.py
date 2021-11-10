@@ -4,6 +4,7 @@ import math
 from typing import Sequence
 import numpy as np
 from numpy.lib import utils
+from numpy.lib.polynomial import poly
 import pretty_midi
 from tensorflow.python.keras.utils.np_utils import to_categorical
 from tensorflow.python.module.module import Module
@@ -40,8 +41,8 @@ def chord_data_generator(song_list, batch_size = 8, max_steps=8, chord_interval=
                     X1_out = np.array(batch_chord_inputs)
                     X2_out = np.array(batch_melody_inputs)
                     y_out = np.array(batch_targets)
-                    #print(X1_out.shape, X2_out.shape, y_out.shape)
                     yield [X1_out, X2_out], y_out
+                    
                     batch_chord_inputs = []
                     batch_melody_inputs = []
                     batch_targets = []
@@ -59,45 +60,53 @@ def poly_data_generator(song_list, chord_embedding, batch_size = 8, max_steps=12
             num_sequences = math.floor(instrument_data.shape[0] / max_steps)
             
             embedded_chords = chord_embedding.embed_chords_song(chord_data)
+            melody_expanded = np.reshape(melody_data, (-1, 128))
 
             for i in range(num_sequences):
                 current_step = math.floor((i*max_steps)/chord_interval)
                 next_step = math.floor(((i+1)*max_steps)/chord_interval)
-                counter_step = i % chord_interval
                 seq_chords = embedded_chords[:-1][current_step:next_step,]
-                seq_melody = melody_data[:-1][current_step:next_step,counter_step,]
-                counter = np.zeros(chord_interval)
-                counter[counter_step] = 1
-                X = np.concatenate((chord_data, melody_data, counter))
-                y = instrument_data
+                seq_chords_expanded = np.repeat(seq_chords, chord_interval, axis=0)
+                seq_melody = melody_expanded[:-1][i*max_steps:(i+1)*max_steps,]
+                counter = to_categorical(np.tile(range(chord_interval), math.floor(max_steps/chord_interval)), num_classes=chord_interval)
+                X = np.concatenate((seq_chords_expanded, seq_melody, counter), axis=1)
+                y = instrument_data[1:][i*max_steps:(i+1)*max_steps,]
                 batch_inputs.append(X)
                 batch_targets.append(y)
 
-                if len(batch_chord_inputs) == batch_size:
-                    X1_out = np.array(batch_chord_inputs)
-                    X2_out = np.array(batch_melody_inputs)
+                if len(batch_inputs) == batch_size:
+                    X_out = np.array(batch_inputs)
                     y_out = np.array(batch_targets)
-                    #print(X1_out.shape, X2_out.shape, y_out.shape)
-                    yield [X1_out, X2_out], y_out
-                    batch_chord_inputs = []
-                    batch_melody_inputs = []
+                    yield X_out, y_out
+
+                    batch_inputs = []
                     batch_targets = []
         if not infinite:
             break
 
-def count_steps(filenames, batch_size = 8, **params):
-    generator = chord_data_generator(filenames, batch_size=8, infinite=False, **params)
+def count_steps(filenames, batch_size = 8, generator = 0, chord_embedding = None, **params):
+    if generator == 0:
+        generator = chord_data_generator(filenames, batch_size=8, infinite=False, **params)
+    elif generator == 1:
+        generator = poly_data_generator(filenames, chord_embedding, batch_size=8, infinite=False, **params)
     num_batches = 0
     for data in generator:
         num_batches += 1
     return num_batches
 
 if __name__ == '__main__':
-    model_path = os.path.join(results_dir, 'models', 'epoch085.hdf5')
-    chord_embedding = load_data.ChordEmbedding(model_path)
+    test_chord = True
+    test_poly = False
     filenames, _ = get_trainval_filenames()
-    test_generator = poly_data_generator(filenames, chord_embedding, batch_size=4)
-    for [input1, input2], output in test_generator:
-        print(input1.shape, input2.shape, output.shape)
+    if test_chord:
+        test_chord_gen = chord_data_generator(filenames, batch_size=4)
+        for [input1, input2], output in test_chord_gen:
+            print(input1.shape, input2.shape, output.shape)
+    if test_poly:
+        model_path = os.path.join(results_dir, 'models', 'epoch085.hdf5')
+        chord_embedding = load_data.ChordEmbedding(model_path)
+        test_generator = poly_data_generator(filenames, chord_embedding, batch_size=4)
+        for input, output in test_generator:
+            print(input.shape, output.shape)
     #train_data, _ = load_data.get_trainval_filenames()
     #print(count_steps(train_data))

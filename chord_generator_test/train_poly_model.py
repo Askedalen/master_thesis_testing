@@ -10,28 +10,24 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.python.keras.backend import reshape, function
 from tensorflow.python.keras.engine import input_spec
 from tensorflow.python.keras.layers.core import Reshape
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 from load_data import get_trainval_filenames
 import load_data
 from generator import poly_data_generator, count_steps
 import math
 import time
 from config import *
-from data_preparation import get_chord_dict
-
-
-
 
 TESTING = True
 RANDOM = False
 
 model_path = os.path.join(results_dir, 'models', 'epoch085.hdf5')
 
-lstm_size = 512
+lstm_size = 1024
 learning_rate = 0.00001
 num_notes = 128
 embedding_size = 10
-vocabulary = 100
+vocabulary = 512
 max_steps = 8
 chord_interval = 16
 
@@ -39,11 +35,11 @@ if TESTING:
     batch_size = 8
     val_batch_size = 4
     epochs = 2
-    num_songs = 40
+    num_songs = 20
     verbose = 1
 else:
-    batch_size = 32
-    val_batch_size = 16
+    batch_size = 128
+    val_batch_size = 32
     epochs = 100
     num_songs = 0
     verbose = 2
@@ -57,8 +53,8 @@ params = {'max_steps':128,
 train_filenames, val_filenames = get_trainval_filenames(num_songs, rand_data=RANDOM)
 chord_embedding = load_data.ChordEmbedding(model_path)
 print(f'Counting steps for {len(train_filenames) + len(val_filenames)} files')
-training_steps = count_steps(train_filenames, batch_size, **params)
-val_steps = count_steps(val_filenames, val_batch_size, **params)
+training_steps = count_steps(train_filenames, batch_size, generator=1, chord_embedding=chord_embedding, **params)
+val_steps = count_steps(val_filenames, val_batch_size, generator=1, chord_embedding=chord_embedding, **params)
 print(f'Training steps: {training_steps} \r\nVal steps: {val_steps}')
 training_generator = poly_data_generator(train_filenames, chord_embedding, batch_size=batch_size, **params)
 val_generator = poly_data_generator(val_filenames, chord_embedding, batch_size=val_batch_size, **params)
@@ -67,26 +63,10 @@ loss = 'categorical_crossentropy'
 
 print('Creating model...')
 
-#Create chord embedding
-chord_input = Input(shape=(1,))
-embedding = Embedding(vocabulary, embedding_size)(chord_input)
-
-#Create melody input
-melody_input = Input(shape=(1,num_notes,))
-
-#Concat chord and melody input
-lstm_data = concatenate([embedding, melody_input])
-lstm_data = Reshape((-1,num_notes+embedding_size))(lstm_data)
-
-#LSTM layer
-lstm = LSTM(lstm_size, return_sequences=True)(lstm_data)
-
-#Dense layer and activation
-dense = Dense(vocabulary)(lstm)
-activation = Activation('sigmoid')(dense)
-
-#Create model
-model = Model(inputs=[chord_input, melody_input], outputs=activation)
+model = Sequential()
+model.add(LSTM(lstm_size, input_shape=(128, num_notes + params['chord_interval'] + embedding_size), return_sequences=True))
+model.add(Dense(512))
+model.add(Activation('sigmoid'))
 
 model.compile(optimizer, loss, metrics=['accuracy'])
 model.summary()
@@ -99,7 +79,7 @@ def train():
     start_time = time.time()
     for e in range(1, epochs+1):
         print('Epoch', e, 'of', epochs)
-        hist = model.fit(training_generator, validation_data=val_generator, epochs=1, shuffle=False, verbose=True, steps_per_epoch=steps_per_epoch, validation_steps=validation_steps)
+        hist = model.fit(training_generator, validation_data=val_generator, epochs=1, shuffle=False, verbose=True, steps_per_epoch=training_steps, validation_steps=val_steps)
         model.reset_states()
 
         losses[0, e-1] = hist.history['loss'][0]
