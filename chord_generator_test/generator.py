@@ -95,8 +95,8 @@ def count_steps(filenames, batch_size = 8, generator = 0, chord_embedding = None
     return num_batches
 
 if __name__ == '__main__':
-    test_chord = True
-    test_poly = False
+    test_chord = False
+    test_poly = True
     filenames, _ = get_trainval_filenames()
     if test_chord:
         test_chord_gen = chord_data_generator(filenames, batch_size=4)
@@ -105,8 +105,6 @@ if __name__ == '__main__':
     if test_poly:
         model_path = os.path.join(results_dir, 'models', 'epoch085.hdf5')
         chord_embedding = load_data.ChordEmbedding(model_path)
-        test_generator = poly_data_generator(filenames, chord_embedding, batch_size=4)
+        test_generator = poly_data_generator(filenames, chord_embedding, batch_size=4, infinite=False)
         for input, output in test_generator:
-            print(input.shape, output.shape)
-    #train_data, _ = load_data.get_trainval_filenames()
-    #print(count_steps(train_data))
+            pass#print(input.shape, output.shape)

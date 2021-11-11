@@ -280,6 +280,34 @@ def get_chord_progression(midi_data, chord_dict=None):
             chord_progression.append(chord_name)
     return np.array(chord_progression)
     
+def get_instrument_tracks_combined(midi_data):
+    pr_shape = get_piano_roll(midi_data).T.shape
+
+    drum_track = np.zeros(pr_shape)
+    bass_track = np.zeros(pr_shape)
+    guit_track = np.zeros(pr_shape)
+    pian_track = np.zeros(pr_shape)
+    
+    for i in range(len(midi_data.instruments)):
+        inst_name = get_inst_type(midi_data.instruments[i])
+        if inst_name == inst_types['DRUM']:
+            drum_roll = get_inst_roll(midi_data, i).T
+            drum_track[:drum_roll.shape[0]] += drum_roll
+        elif inst_name == inst_types['BASS']:
+            bass_roll = get_inst_roll(midi_data, i).T
+            bass_track[:bass_roll.shape[0]] += bass_roll
+        elif inst_name == inst_types['GUITAR']:
+            guit_roll = get_inst_roll(midi_data, i).T
+            guit_track[:guit_roll.shape[0]] += guit_roll
+        elif inst_name == inst_types['PIANO']:
+            pian_roll = get_inst_roll(midi_data, i).T
+            pian_track[:pian_roll.shape[0]] += pian_roll
+        else:
+            continue
+    
+    comb_track = np.concatenate((drum_track, bass_track, guit_track, pian_track), axis=1)
+    
+    return comb_track
 
 if __name__ == "__main__":
     #get_inst_type(None)

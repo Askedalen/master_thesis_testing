@@ -133,38 +133,44 @@ def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=128):
         filename = os.path.basename(file)
         chords_file = os.path.join(chord_dir, filename)
         melody_file = os.path.join(melody_dir, filename)
-        if os.path.exists(melody_file):
-            continue
+        instrument_file = os.path.join(instrument_dir, filename)
+        #if os.path.exists(melody_file):
+        #    continue
 
         midi_data_modulated = pickle.load(open(file, 'rb'))
 
         chords = mf.get_chord_progression(midi_data_modulated, chord_dict)
         melody = mf.get_random_melody(midi_data_modulated)
+        instruments = mf.get_instrument_tracks_combined(midi_data_modulated)
         if melody is False:
             num_failed += 1
             continue
-        #melody = melody.T
         # Add padding for end of melody so length is divisible by chord_interval
         melody_rest_steps = chord_interval - melody.shape[0] % chord_interval
         if melody_rest_steps > 0:
             melody = np.resize(melody.T, (chords.shape[0], chord_interval, num_notes))
             melody[-1, -melody_rest_steps:,] = 0
+            instruments = np.resize(instruments, (chords.shape[0]*chord_interval, instruments.shape[1]))
+            instruments[-1, -melody_rest_steps:,] = 0
         else:
             melody = np.reshape(melody.T, (-1, chord_interval, num_notes))
-
+            
         #Add padding for end of song so length is divisible by max_steps
         chords_rest_steps = (max_steps - (chords.shape[0] % max_steps)) + 1
         if chords_rest_steps > 0:
             chords = np.resize(chords, (chords.shape[0] + chords_rest_steps))
             melody = np.resize(melody, (chords.shape[0], chord_interval, num_notes))
+            instruments = np.resize(instruments, (chords.shape[0]*chord_interval, instruments.shape[1]))
             chords[-chords_rest_steps:] = 0
             melody[-chords_rest_steps:,:] = 0
+            instruments[-chords_rest_steps*chord_interval] = 0
 
         # Store chord progression and melody
         pickle.dump(chords, open(chords_file, 'wb'))
         pickle.dump(melody, open(melody_file, 'wb'))
+        pickle.dump(instruments, open(instrument_file, 'wb'))
 
-        if (i+1) % 100 == 0:
+        if (i+1) % 10 == 0:
             print(f"Finished {i+1}/{len(files)} songs")
         
     end_time = time.time()

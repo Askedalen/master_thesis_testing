@@ -6,5 +6,6 @@ midi_unmod_dir  = os.path.join(data_dir, 'midi_unmod')
 midi_mod_dir    = os.path.join(data_dir, 'midi_mod')
 chord_dir       = os.path.join(data_dir, 'chords')
 melody_dir      = os.path.join(data_dir, 'melodies')
+instrument_dir  = os.path.join(data_dir, 'instruments')
 
 subdivision     = 4 # Subdivision for each beat

@@ -99,6 +99,19 @@ def get_chords_and_melody(filename, binary=False, rand_data=False):
 
     return chord_data, melody_data
 
+def get_instruments(filename, binary=False, rand_data=False):
+    if rand_data:
+        instrument_path = os.path.join(random_data_dir, 'chords', filename)
+    else:
+        instrument_path = os.path.join(instrument_dir, filename)
+
+    instrument_data = pickle.load(open(instrument_path, 'rb'))
+
+    if binary:
+        instrument_data[instrument_data > 0] = 1
+
+    return instrument_data
+
 def get_trainval_filenames(num_songs=0, rand_data=False):
     if rand_data:
         data_path = os.path.join(random_data_dir, 'melodies')
@@ -113,46 +126,6 @@ def get_trainval_filenames(num_songs=0, rand_data=False):
     val_set = data_files[train_count:]
     return train_set, val_set
 
-def get_instruments(filename, binary=False, rand_data=False):
-    midi_path = os.path.join(midi_mod_dir, filename)
-    midi_data = pickle.load(open(midi_path, 'rb'))
-
-    max_steps= 128
-
-    pr_shape = mf.get_piano_roll(midi_data).T.shape
-
-    rest_steps = max_steps - (pr_shape[0] % max_steps) + 1
-    if rest_steps > 0:
-        pr_shape = [pr_shape[0]+rest_steps, pr_shape[1]]
-    drum_track = np.zeros(pr_shape)
-    bass_track = np.zeros(pr_shape)
-    guit_track = np.zeros(pr_shape)
-    pian_track = np.zeros(pr_shape)
-    
-    for i in range(len(midi_data.instruments)):
-        inst_name = mf.get_inst_type(midi_data.instruments[i])
-        if inst_name == mf.inst_types['DRUM']:
-            drum_roll = mf.get_inst_roll(midi_data, i).T
-            drum_track[:drum_roll.shape[0]] += drum_roll
-        elif inst_name == mf.inst_types['BASS']:
-            bass_roll = mf.get_inst_roll(midi_data, i).T
-            bass_track[:bass_roll.shape[0]] += bass_roll
-        elif inst_name == mf.inst_types['GUITAR']:
-            guit_roll = mf.get_inst_roll(midi_data, i).T
-            guit_track[:guit_roll.shape[0]] += guit_roll
-        elif inst_name == mf.inst_types['PIANO']:
-            pian_roll = mf.get_inst_roll(midi_data, i).T
-            pian_track[:pian_roll.shape[0]] += pian_roll
-        else:
-            continue
-    
-    comb_track = np.concatenate((drum_track, bass_track, guit_track, pian_track), axis=1)
-    if binary:
-        comb_track[comb_track > 0] = 1
-    
-    return comb_track
-
-
 def load_midi_unmod():
     files = []
     data_files = [os.path.join(midi_unmod_dir, path) for path in os.listdir(midi_unmod_dir) if '.pickle' in path]
@@ -160,8 +133,6 @@ def load_midi_unmod():
         files.append(pickle.load(open(file, 'rb')))
     print('success')
 
-
-
 if __name__ == "__main__":
-    get_instruments('1e1711b1e1ed430eeca9c9de7668c348.pickle')
+    get_instruments('0dd4d2b9fbcf96a0fa363a1918255e58.pickle')
     print()
