@@ -1,6 +1,6 @@
 from numpy import random
 from tensorflow.python.keras.utils.np_utils import to_categorical
-from config import *
+import config as conf
 import pretty_midi
 import load_data
 import midi_functions as mf
@@ -12,20 +12,20 @@ import matplotlib.pyplot as plt
 import _pickle as pickle
 
 np.random.seed(2020)
+log_interval = 100
 
 def list_midi_files():
     song_list = []
     if os.path.exists('song_list.pickle'):
-        song_list = pickle.load(open("song_list.txt", "rb"))
+        song_list = pickle.load(open("song_list.pickle", "rb"))
     else:
         path = "lmd_matched"
         for r, d, f in os.walk(path):
             for file in f:
                 if '.mid' in file:
                     song_list.append(os.path.join(r, file))
-        pickle.dump(song_list, open("song_list.txt", "wb"))
+        pickle.dump(song_list, open("song_list.pickle", "wb"))
     return song_list
-
 
 def midi_to_pickle():
     files = list_midi_files()
@@ -35,7 +35,7 @@ def midi_to_pickle():
     for i in range(len(files)):
         file = files[i]
         filename = os.path.basename(file).replace('.mid', '.pickle')
-        midi_file = os.path.join(midi_unmod_dir, filename)
+        midi_file = os.path.join(conf.midi_unmod_dir, filename)
         if os.path.exists(midi_file):
             num_failed += 1
             continue
@@ -49,7 +49,7 @@ def midi_to_pickle():
         # Store PrettyMIDI as pickle
         pickle.dump(midi_data, open(midi_file, 'wb'))
 
-        if (i+1) % 100 == 0:
+        if (i+1) % log_interval == 0:
             print(f"Finished {i+1}/{len(files)} songs")
 
     end_time = time.time()
@@ -62,7 +62,7 @@ def normalize_keys(num_files=0):
     for i in range(len(files)):
         file = files[i]
         filename = os.path.basename(file)
-        midi_mod_file = os.path.join(midi_mod_dir, filename)
+        midi_mod_file = os.path.join(conf.midi_mod_dir, filename)
         if os.path.exists(midi_mod_file):
             continue
 
@@ -88,7 +88,7 @@ def normalize_keys(num_files=0):
         
         #Store modulated PrettyMIDI as pickle
         pickle.dump(midi_data_modulated, open(midi_mod_file, 'wb'))
-        if (i+1) % 100 == 0:
+        if (i+1) % log_interval == 0:
             print(f"Finished {i+1}/{len(files)} songs")
     end_time = time.time()
     print(f"Finished {len(files)} songs in {end_time - start_time} seconds.")
@@ -122,7 +122,7 @@ def create_chord_dict(num_files=0, vocabulary=100, chord_interval=16):
     pickle.dump(chord_dict, open('chord_dict.pickle', 'wb'))
     print(f'Generated chord dictionary in {end_time - start_time} seconds.')
 
-def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=128):
+def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=60):
     files = load_data.list_pickle_files('midi_mod', num_files)
     chord_dict, _ = load_data.get_chord_dict()
     num_failed = 0
@@ -131,9 +131,9 @@ def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=128):
     for i in range(len(files)):
         file = files[i]
         filename = os.path.basename(file)
-        chords_file = os.path.join(chord_dir, filename)
-        melody_file = os.path.join(melody_dir, filename)
-        instrument_file = os.path.join(instrument_dir, filename)
+        chords_file = os.path.join(conf.chord_dir, filename)
+        melody_file = os.path.join(conf.melody_dir, filename)
+        instrument_file = os.path.join(conf.instrument_dir, filename)
         #if os.path.exists(melody_file):
         #    continue
 
@@ -170,24 +170,24 @@ def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=128):
         pickle.dump(melody, open(melody_file, 'wb'))
         pickle.dump(instruments, open(instrument_file, 'wb'))
 
-        if (i+1) % 10 == 0:
+        if (i+1) % log_interval == 0:
             print(f"Finished {i+1}/{len(files)} songs")
         
     end_time = time.time()
     print(f"Finished {len(files)} songs in {end_time - start_time} seconds. {num_failed} songs failed.")
 
-def create_random_data(num_songs):
+def create_random_data(num_songs, steps_per_song, chord_interval, vocabulary):
     start_time = time.time()
     print('Generating random chord sequence...')
-    random_chord_sequence  = np.random.randint(0,  99, (num_songs, 65))
+    random_chord_sequence  = np.random.randint(0,  vocabulary-1, (num_songs, steps_per_song))
     print('Generating random melody...')
-    random_melody_sequence = np.random.randint(0, 127, (num_songs, 65, 16, 1))
-    random_melody_sequence = to_categorical(random_melody_sequence, num_classes=128)
+    random_melody_sequence = np.random.randint(0, conf.num_notes-1, (num_songs, steps_per_song, chord_interval, 1))
+    random_melody_sequence = to_categorical(random_melody_sequence, num_classes=conf.num_notes)
 
     print('Writing to files...')
     for i in range(num_songs):
-        chords_path = os.path.join(random_data_dir, 'chords', f'{i:05d}.pickle')
-        melody_path = os.path.join(random_data_dir, 'melodies', f'{i:05d}.pickle')
+        chords_path = os.path.join(conf.random_data_dir, 'chords', f'{i:05d}.pickle')
+        melody_path = os.path.join(conf.random_data_dir, 'melodies', f'{i:05d}.pickle')
 
         pickle.dump(random_chord_sequence[i], open(chords_path, 'wb'))
         pickle.dump(random_melody_sequence[i], open(melody_path, 'wb'))

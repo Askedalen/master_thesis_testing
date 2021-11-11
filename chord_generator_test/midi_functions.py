@@ -5,7 +5,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 import pickle
-from config import *
+import config as conf
 
 inst_types = {'DRUM':0, 'BASS':1, 'GUITAR':2, 'PIANO':3, 'VOCAL':4, 'MELODY':5, 'OTHER':6}
 notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -34,7 +34,7 @@ def get_inst_type(inst_data):
 def get_chroma(midi_data):
     initial_tempo = midi_data.get_tempo_changes()[1][0]
     beat_length_seconds = 60 / initial_tempo # Get length of each beat in seconds
-    sampling_freq = 1 / (beat_length_seconds / subdivision) # Calculate sampling frequency to get 32nd notes
+    sampling_freq = 1 / (beat_length_seconds / conf.subdivision) # Calculate sampling frequency to get 32nd notes
 
     piano_roll = midi_data.get_chroma(sampling_freq)
     return piano_roll
@@ -42,7 +42,7 @@ def get_chroma(midi_data):
 def get_piano_roll(midi_data):
     initial_tempo = midi_data.get_tempo_changes()[1][0]
     beat_length_seconds = 60 / initial_tempo # Get length of each beat in seconds
-    sampling_freq = 1 / (beat_length_seconds / subdivision) # Calculate sampling frequency to get 32nd notes
+    sampling_freq = 1 / (beat_length_seconds / conf.subdivision) # Calculate sampling frequency to get 32nd notes
 
     piano_roll = midi_data.get_piano_roll(sampling_freq)
     return piano_roll
@@ -50,7 +50,7 @@ def get_piano_roll(midi_data):
 def get_all_inst_rolls(midi_data):
     initial_tempo = midi_data.get_tempo_changes()[1][0]
     beat_length_seconds = 60 / initial_tempo # Get length of each beat in seconds
-    sampling_freq = 1 / (beat_length_seconds / subdivision) # Calculate sampling frequency to get 32nd notes
+    sampling_freq = 1 / (beat_length_seconds / conf.subdivision) # Calculate sampling frequency to get 32nd notes
     piano_roll_shape = midi_data.get_piano_roll(sampling_freq).shape
 
     piano_rolls = []
@@ -65,13 +65,14 @@ def get_all_inst_rolls(midi_data):
 def get_inst_roll(midi_data, inst_num):
     initial_tempo = midi_data.get_tempo_changes()[1][0]
     beat_length_seconds = 60 / initial_tempo # Get length of each beat in seconds
-    sampling_freq = 1 / (beat_length_seconds / subdivision) # Calculate sampling frequency to get 32nd notes
+    sampling_freq = 1 / (beat_length_seconds / conf.subdivision) # Calculate sampling frequency to get 32nd notes
     piano_roll_shape = midi_data.get_piano_roll(sampling_freq).shape
 
     inst = midi_data.instruments[inst_num]
     pianoroll = np.zeros(piano_roll_shape)
     inst_roll = inst.get_piano_roll(sampling_freq)
     pianoroll[:, :inst_roll.shape[1]] += inst_roll
+    pianoroll = pianoroll[conf.pr_start_idx:conf.pr_end_idx,:]
     return pianoroll
 
 def modulate(midi_data, num_steps):
@@ -283,10 +284,10 @@ def get_chord_progression(midi_data, chord_dict=None):
 def get_instrument_tracks_combined(midi_data):
     pr_shape = get_piano_roll(midi_data).T.shape
 
-    drum_track = np.zeros(pr_shape)
-    bass_track = np.zeros(pr_shape)
-    guit_track = np.zeros(pr_shape)
-    pian_track = np.zeros(pr_shape)
+    drum_track = np.zeros((pr_shape[0], conf.num_notes))
+    bass_track = np.zeros((pr_shape[0], conf.num_notes))
+    guit_track = np.zeros((pr_shape[0], conf.num_notes))
+    pian_track = np.zeros((pr_shape[0], conf.num_notes))
     
     for i in range(len(midi_data.instruments)):
         inst_name = get_inst_type(midi_data.instruments[i])

@@ -2,7 +2,8 @@ from keras.models import load_model
 import numpy as np
 import midi_functions as mf
 import load_data as load
-from config import *
+import os
+import config as conf
 import pretty_midi
 import data_preparation
 import _pickle as pickle
@@ -10,7 +11,7 @@ import _pickle as pickle
 np.random.seed(2014)
 
 num_steps = 16
-model_file = os.path.join(results_dir, 'models', 'epoch085.hdf5')
+model_file = os.path.join(conf.results_dir, 'models', 'epoch085.hdf5')
 
 filenames = load.list_pickle_files('melodies')
 
@@ -26,7 +27,7 @@ for i in range(10):
     
     chords_input = [[[[]]]]
     chords_input[0][0][0] = 92
-    melody_input = np.zeros((1, 16, 128))
+    melody_input = np.zeros((1, 16, conf.num_notes))
     output = np.zeros(num_steps+1)
     output[0] = 92
 
@@ -35,7 +36,7 @@ for i in range(10):
     #output[0,0,0] = 37
     for j in range(num_steps):
         x_chords = np.zeros((j+1))
-        x_melody = np.zeros((j+1, 16, 128))
+        x_melody = np.zeros((j+1, 16, conf.num_notes))
         x_chords = output[0:j+1]
         x_melody[:,:,:] = melody[8:9,:,:]
         prediction = model.predict([x_chords, x_melody])
@@ -52,11 +53,11 @@ for i in range(10):
     output = output.flatten()
     chords = [index_to_chord[i] for i in output]
 
-    pianoroll_melody = np.reshape(melody, (-1, 128)).T
+    pianoroll_melody = np.reshape(melody, (-1, conf.num_notes)).T
     melody_midi = mf.piano_roll_to_midi(pianoroll_melody)
 
-    midi_path = os.path.join(results_dir, 'chords_and_melodies', f'test{i:02d}.mid')
-    chord_path = os.path.join(results_dir, 'chords_and_melodies', f'test{i:02d}.txt')
+    midi_path = os.path.join(conf.results_dir, 'chords_and_melodies', f'test{i:02d}.mid')
+    chord_path = os.path.join(conf.results_dir, 'chords_and_melodies', f'test{i:02d}.txt')
 
     orig = pretty_midi.PrettyMIDI()
     melody_midi.write(midi_path)

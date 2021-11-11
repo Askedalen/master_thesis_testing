@@ -1,4 +1,3 @@
-from config import *
 import os
 import numpy as np
 from numpy.lib.npyio import load
@@ -8,6 +7,7 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.models import load_model
 from tensorflow.python.keras.backend import reshape, function
 import math
+import config as conf
 
 import midi_functions as mf
 
@@ -37,7 +37,7 @@ class ChordEmbedding:
         return np.array(embeded_chords)
 
 def load_data(subpath, num_songs=0, return_filenames=False):
-    data_path = os.path.join(data_dir, subpath)
+    data_path = os.path.join(conf.data_dir, subpath)
     data_files = [os.path.join(data_path, path) for path in os.listdir(data_path) if '.pickle' in path]  
     its = len(data_files)
     if num_songs > 0:
@@ -55,7 +55,7 @@ def load_data(subpath, num_songs=0, return_filenames=False):
     return midi_x
 
 def list_pickle_files(subpath, num_songs=0):
-    data_path = os.path.join(data_dir, subpath)
+    data_path = os.path.join(conf.data_dir, subpath)
     data_files = [os.path.join(data_path, path) for path in os.listdir(data_path) if '.pickle' in path]
     if num_songs == 0:
         return data_files
@@ -85,11 +85,11 @@ def get_trainval_chords_and_melody(num_songs = 0):
 
 def get_chords_and_melody(filename, binary=False, rand_data=False):
     if rand_data:
-        chord_path = os.path.join(random_data_dir, 'chords', filename)
-        melody_path = os.path.join(random_data_dir, 'melodies', filename)
+        chord_path = os.path.join(conf.random_data_dir, 'chords', filename)
+        melody_path = os.path.join(conf.random_data_dir, 'melodies', filename)
     else:
-        chord_path = os.path.join(chord_dir, filename)
-        melody_path = os.path.join(melody_dir, filename)
+        chord_path = os.path.join(conf.chord_dir, filename)
+        melody_path = os.path.join(conf.melody_dir, filename)
 
     chord_data = pickle.load(open(chord_path, 'rb'))
     melody_data = pickle.load(open(melody_path, 'rb'))
@@ -101,9 +101,9 @@ def get_chords_and_melody(filename, binary=False, rand_data=False):
 
 def get_instruments(filename, binary=False, rand_data=False):
     if rand_data:
-        instrument_path = os.path.join(random_data_dir, 'chords', filename)
+        instrument_path = os.path.join(conf.random_data_dir, 'chords', filename)
     else:
-        instrument_path = os.path.join(instrument_dir, filename)
+        instrument_path = os.path.join(conf.instrument_dir, filename)
 
     instrument_data = pickle.load(open(instrument_path, 'rb'))
 
@@ -114,9 +114,9 @@ def get_instruments(filename, binary=False, rand_data=False):
 
 def get_trainval_filenames(num_songs=0, rand_data=False):
     if rand_data:
-        data_path = os.path.join(random_data_dir, 'melodies')
+        data_path = os.path.join(conf.random_data_dir, 'melodies')
     else:
-        data_path = os.path.join(data_dir, 'melodies')
+        data_path = os.path.join(conf.data_dir, 'melodies')
     data_files = [path for path in os.listdir(data_path) if '.pickle' in path]
     if num_songs > 0:
         data_files = data_files[:num_songs]
@@ -128,7 +128,7 @@ def get_trainval_filenames(num_songs=0, rand_data=False):
 
 def load_midi_unmod():
     files = []
-    data_files = [os.path.join(midi_unmod_dir, path) for path in os.listdir(midi_unmod_dir) if '.pickle' in path]
+    data_files = [os.path.join(conf.midi_unmod_dir, path) for path in os.listdir(conf.midi_unmod_dir) if '.pickle' in path]
     for file in data_files:
         files.append(pickle.load(open(file, 'rb')))
     print('success')

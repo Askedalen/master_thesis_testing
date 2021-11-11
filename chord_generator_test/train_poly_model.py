@@ -16,22 +16,22 @@ import load_data
 from generator import poly_data_generator, count_steps
 import math
 import time
-from config import *
+import config as conf
 
 TESTING = True
 RANDOM = False
 
-model_path = os.path.join(results_dir, 'models', 'epoch085.hdf5')
+model_path = os.path.join(conf.chord_model_dir, 'epoch001.hdf5')
 
 lstm_size = 1024
 learning_rate = 0.00001
-num_notes = 128
+num_notes = conf.num_notes
 embedding_size = 10
-vocabulary = 512
-max_steps = 8
+vocabulary = num_notes*4
+max_steps = 128
 chord_interval = 16
 
-if TESTING:
+if conf.testing:
     batch_size = 8
     val_batch_size = 4
     epochs = 2
@@ -44,11 +44,10 @@ else:
     num_songs = 0
     verbose = 2
 
-params = {'max_steps':128,
-          'chord_interval':16,
+params = {'max_steps':max_steps,
+          'chord_interval':chord_interval,
           'num_notes':num_notes,
-          'vocabulary':vocabulary,
-          'rand_data':RANDOM}
+          'rand_data':conf.random_data}
 
 train_filenames, val_filenames = get_trainval_filenames(num_songs, rand_data=RANDOM)
 chord_embedding = load_data.ChordEmbedding(model_path)
@@ -64,8 +63,8 @@ loss = 'categorical_crossentropy'
 print('Creating model...')
 
 model = Sequential()
-model.add(LSTM(lstm_size, input_shape=(128, num_notes + params['chord_interval'] + embedding_size), return_sequences=True))
-model.add(Dense(512))
+model.add(LSTM(lstm_size, input_shape=(params['max_steps'], num_notes + params['chord_interval'] + embedding_size), return_sequences=True))
+model.add(Dense(vocabulary))
 model.add(Activation('sigmoid'))
 
 model.compile(optimizer, loss, metrics=['accuracy'])
@@ -86,7 +85,7 @@ def train():
         losses[1, e-1] = hist.history['val_loss'][0]
         accuracies[0, e-1] = hist.history['accuracy'][0]
         accuracies[1, e-1] = hist.history['val_accuracy'][0]
-        model.save(os.path.join(results_dir, 'models', f'epoch{e:03d}.hdf5'))
+        model.save(os.path.join(conf.poly_model_dir, f'epoch{e:03d}.hdf5'))
     end_time = time.time()
     print(f'Finished training in {end_time - start_time} seconds')
 
@@ -98,7 +97,7 @@ def plot_results():
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(os.path.join(results_dir, 'loss_vs_val_loss.png'))
+    plt.savefig(os.path.join(conf.results_dir, 'loss_vs_val_loss.png'))
 
     plt.figure()
     plt.plot(accuracies[0], 'r--', label='Accuracy')
@@ -107,7 +106,7 @@ def plot_results():
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy (%)')
     plt.legend()
-    plt.savefig(os.path.join(results_dir, 'acc_vs_val_acc.png'))
+    plt.savefig(os.path.join(conf.results_dir, 'acc_vs_val_acc.png'))
 
 def print_results():
     print()

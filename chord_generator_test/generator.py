@@ -11,11 +11,11 @@ from tensorflow.python.module.module import Module
 from load_data import get_trainval_filenames
 import load_data
 import tensorflow.keras.utils
-from config import *
+import config as conf
 
 np.random.seed(2021)
 
-def chord_data_generator(song_list, batch_size = 8, max_steps=8, chord_interval=16, num_notes=128, vocabulary=100, infinite=True, rand_data=False):
+def chord_data_generator(song_list, batch_size = 8, max_steps=8, chord_interval=16, num_notes=60, vocabulary=100, infinite=True, rand_data=False):
     chord_dim = (max_steps, 1) # Dimension for Input1
     while True:
         np.random.shuffle(song_list)
@@ -49,7 +49,7 @@ def chord_data_generator(song_list, batch_size = 8, max_steps=8, chord_interval=
         if not infinite:
             break
 
-def poly_data_generator(song_list, chord_embedding, batch_size = 8, max_steps=128, chord_interval=16, num_notes=128, vocabulary=100, infinite=True, rand_data=False):
+def poly_data_generator(song_list, chord_embedding, batch_size = 8, max_steps=128, chord_interval=16, num_notes=60, infinite=True, rand_data=False):
     while True:
         np.random.shuffle(song_list)
         batch_inputs = []
@@ -60,7 +60,7 @@ def poly_data_generator(song_list, chord_embedding, batch_size = 8, max_steps=12
             num_sequences = math.floor(instrument_data.shape[0] / max_steps)
             
             embedded_chords = chord_embedding.embed_chords_song(chord_data)
-            melody_expanded = np.reshape(melody_data, (-1, 128))
+            melody_expanded = np.reshape(melody_data, (-1, num_notes))
 
             for i in range(num_sequences):
                 current_step = math.floor((i*max_steps)/chord_interval)
@@ -86,9 +86,9 @@ def poly_data_generator(song_list, chord_embedding, batch_size = 8, max_steps=12
 
 def count_steps(filenames, batch_size = 8, generator = 0, chord_embedding = None, **params):
     if generator == 0:
-        generator = chord_data_generator(filenames, batch_size=8, infinite=False, **params)
+        generator = chord_data_generator(filenames, batch_size=batch_size, infinite=False, **params)
     elif generator == 1:
-        generator = poly_data_generator(filenames, chord_embedding, batch_size=8, infinite=False, **params)
+        generator = poly_data_generator(filenames, chord_embedding, batch_size=batch_size, infinite=False, **params)
     num_batches = 0
     for data in generator:
         num_batches += 1
@@ -103,7 +103,7 @@ if __name__ == '__main__':
         for [input1, input2], output in test_chord_gen:
             print(input1.shape, input2.shape, output.shape)
     if test_poly:
-        model_path = os.path.join(results_dir, 'models', 'epoch085.hdf5')
+        model_path = os.path.join(conf.chord_model_dir, 'epoch001.hdf5')
         chord_embedding = load_data.ChordEmbedding(model_path)
         test_generator = poly_data_generator(filenames, chord_embedding, batch_size=4, infinite=False)
         for input, output in test_generator:
