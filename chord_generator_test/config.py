@@ -3,8 +3,10 @@ import os
 testing         = True
 random_data     = False
 
-data_dir        = os.path.join('chord_generator_test', 'data')
-results_dir     = os.path.join('chord_generator_test', 'results')
+prefix_folder = ''
+
+data_dir        = os.path.join(prefix_folder, 'data')
+results_dir     = os.path.join(prefix_folder, 'results')
 chord_model_dir = os.path.join(results_dir, 'models', 'chord')
 poly_model_dir  = os.path.join(results_dir, 'models', 'poly')
 random_data_dir = os.path.join(data_dir, 'random')

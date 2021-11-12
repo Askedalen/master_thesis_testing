@@ -18,9 +18,6 @@ import math
 import time
 import config as conf
 
-TESTING = True
-RANDOM = False
-
 model_path = os.path.join(conf.chord_model_dir, 'epoch001.hdf5')
 
 lstm_size = 1024
@@ -49,7 +46,7 @@ params = {'max_steps':max_steps,
           'num_notes':num_notes,
           'rand_data':conf.random_data}
 
-train_filenames, val_filenames = get_trainval_filenames(num_songs, rand_data=RANDOM)
+train_filenames, val_filenames = get_trainval_filenames(num_songs, rand_data=conf.random_data)
 chord_embedding = load_data.ChordEmbedding(model_path)
 print(f'Counting steps for {len(train_filenames) + len(val_filenames)} files')
 training_steps = count_steps(train_filenames, batch_size, generator=1, chord_embedding=chord_embedding, **params)

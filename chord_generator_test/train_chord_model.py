@@ -44,7 +44,7 @@ params = {'max_steps':max_steps,
           'vocabulary':vocabulary,
           'rand_data':conf.random_data}
 
-train_filenames, val_filenames = get_trainval_filenames(num_songs, rand_data=RANDOM)
+train_filenames, val_filenames = get_trainval_filenames(num_songs, rand_data=conf.random_data)
 print(f'Counting steps for {len(train_filenames) + len(val_filenames)} files')
 training_steps = count_steps(train_filenames, batch_size, **params)
 val_steps = count_steps(val_filenames, val_batch_size, **params)
