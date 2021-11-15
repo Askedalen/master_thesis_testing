@@ -49,8 +49,8 @@ params = {'max_steps':max_steps,
 train_filenames, val_filenames = get_trainval_filenames(num_songs, rand_data=conf.random_data)
 chord_embedding = load_data.ChordEmbedding(model_path)
 print(f'Counting steps for {len(train_filenames) + len(val_filenames)} files')
-training_steps = count_steps(train_filenames, batch_size, generator=1, chord_embedding=chord_embedding, **params)
-val_steps = count_steps(val_filenames, val_batch_size, generator=1, chord_embedding=chord_embedding, **params)
+training_steps = count_steps(train_filenames, batch_size, generator_num=1, chord_embedding=chord_embedding, **params)
+val_steps = count_steps(val_filenames, val_batch_size, generator_num=1, chord_embedding=chord_embedding, **params)
 print(f'Training steps: {training_steps} \r\nVal steps: {val_steps}')
 training_generator = poly_data_generator(train_filenames, chord_embedding, batch_size=batch_size, **params)
 val_generator = poly_data_generator(val_filenames, chord_embedding, batch_size=val_batch_size, **params)
@@ -94,7 +94,7 @@ def plot_results():
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(os.path.join(conf.results_dir, 'loss_vs_val_loss.png'))
+    plt.savefig(os.path.join(conf.results_dir, 'poly_loss_vs_val_loss.png'))
 
     plt.figure()
     plt.plot(accuracies[0], 'r--', label='Accuracy')
@@ -103,7 +103,7 @@ def plot_results():
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy (%)')
     plt.legend()
-    plt.savefig(os.path.join(conf.results_dir, 'acc_vs_val_acc.png'))
+    plt.savefig(os.path.join(conf.results_dir, 'poly_acc_vs_val_acc.png'))
 
 def print_results():
     print()

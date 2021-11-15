@@ -3,7 +3,7 @@ import os
 testing         = True
 random_data     = False
 
-prefix_folder = ''
+prefix_folder = 'chord_generator_test'
 
 data_dir        = os.path.join(prefix_folder, 'data')
 results_dir     = os.path.join(prefix_folder, 'results')

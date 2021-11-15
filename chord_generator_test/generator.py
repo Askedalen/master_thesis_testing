@@ -12,6 +12,7 @@ from load_data import get_trainval_filenames
 import load_data
 import tensorflow.keras.utils
 import config as conf
+import _pickle as pickle
 
 np.random.seed(2021)
 
@@ -84,14 +85,34 @@ def poly_data_generator(song_list, chord_embedding, batch_size = 8, max_steps=12
         if not infinite:
             break
 
-def count_steps(filenames, batch_size = 8, generator = 0, chord_embedding = None, **params):
-    if generator == 0:
+def count_steps(filenames, batch_size = 8, generator_num = 0, chord_embedding = None, **params):
+    previous_counts = []
+    if os.path.exists('step_counts.pickle'):
+        previous_counts = pickle.load(open('step_counts.pickle', 'rb'))
+        for steps in previous_counts:
+            if steps['generator'] == generator_num and \
+               steps['batch_size'] == batch_size and \
+               steps['max_steps'] == params['max_steps'] and \
+               steps['chord_interval'] == params['chord_interval'] and \
+               steps['num_files'] == len(filenames):
+                return steps['num_steps']
+
+    if generator_num == 0:
         generator = chord_data_generator(filenames, batch_size=batch_size, infinite=False, **params)
-    elif generator == 1:
+    elif generator_num == 1:
         generator = poly_data_generator(filenames, chord_embedding, batch_size=batch_size, infinite=False, **params)
     num_batches = 0
     for data in generator:
         num_batches += 1
+
+    previous_counts.append({'generator':generator_num, 
+                            'batch_size':batch_size,
+                            'max_steps':params['max_steps'],
+                            'chord_interval':params['chord_interval'],
+                            'num_files':len(filenames), 
+                            'num_steps':num_batches})
+    pickle.dump(previous_counts, open('step_counts.pickle', 'wb'))
+
     return num_batches
 
 if __name__ == '__main__':

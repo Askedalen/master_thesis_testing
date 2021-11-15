@@ -107,7 +107,7 @@ def plot_results():
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    plt.savefig(os.path.join(conf.results_dir, 'loss_vs_val_loss.png'))
+    plt.savefig(os.path.join(conf.results_dir, 'chord_loss_vs_val_loss.png'))
 
     plt.figure()
     plt.plot(accuracies[0], 'r--', label='Accuracy')
@@ -116,7 +116,7 @@ def plot_results():
     plt.xlabel('Epoch')
     plt.ylabel('Accuracy (%)')
     plt.legend()
-    plt.savefig(os.path.join(conf.results_dir, 'acc_vs_val_acc.png'))
+    plt.savefig(os.path.join(conf.results_dir, 'chord_acc_vs_val_acc.png'))
 
 def print_results():
     print()
