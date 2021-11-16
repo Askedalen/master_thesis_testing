@@ -55,8 +55,7 @@ print(f'Training steps: {training_steps} \r\nVal steps: {val_steps}')
 training_generator = poly_data_generator(train_filenames, chord_embedding, batch_size=batch_size, **params)
 val_generator = poly_data_generator(val_filenames, chord_embedding, batch_size=val_batch_size, **params)
 optimizer = Adam(learning_rate=learning_rate)
-loss = 'categorical_crossentropy'
-
+loss = 'binary_crossentropy'
 print('Creating model...')
 
 model = Sequential()
@@ -75,7 +74,7 @@ def train():
     start_time = time.time()
     for e in range(1, epochs+1):
         print('Epoch', e, 'of', epochs)
-        hist = model.fit(training_generator, validation_data=val_generator, epochs=1, shuffle=False, verbose=True, steps_per_epoch=training_steps, validation_steps=val_steps)
+        hist = model.fit(training_generator, validation_data=val_generator, epochs=1, shuffle=False, verbose=verbose, steps_per_epoch=training_steps, validation_steps=val_steps)
         model.reset_states()
 
         losses[0, e-1] = hist.history['loss'][0]

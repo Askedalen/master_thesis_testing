@@ -190,13 +190,12 @@ def get_key_and_scale(midi_data):
             key = 0
     return key, scale_name
 
-def piano_roll_to_midi(piano_roll):
-    fs = 8
-    program = 0
-    is_drum = False
+def piano_roll_to_midi(piano_roll, name, program=0, is_drum=False):
+    #This function is taken from https://github.com/craffel/pretty-midi/blob/main/examples/reverse_pianoroll.py
+    piano_roll = piano_roll.T
+    fs = math.floor((conf.tempo / 60) * conf.subdivision)
     num_notes = piano_roll.shape[0]
-    midi = pretty_midi.PrettyMIDI()
-    instrument = pretty_midi.Instrument(program=program, is_drum=is_drum)
+    instrument = pretty_midi.Instrument(name=name, program=program, is_drum=is_drum)
 
     # pad 1 column of zeros so we can acknowledge inital and ending events
     piano_roll = np.pad(piano_roll, [(0, 0), (1, 1)], 'constant')
@@ -218,7 +217,7 @@ def piano_roll_to_midi(piano_roll):
         else:
             pm_note = pretty_midi.Note(
                 velocity=prev_velocities[note],
-                pitch=note,
+                pitch=note + conf.pr_start_idx,
                 start=note_on_time[note],
                 end=time)
             instrument.notes.append(pm_note)
@@ -227,7 +226,25 @@ def piano_roll_to_midi(piano_roll):
     for note in instrument.notes:
         if note.velocity > 127:
             note.velocity = 127
-    midi.instruments.append(instrument)
+    return instrument
+
+def get_poly_output_as_midi(model_output):
+    drum_pianoroll = model_output[:,:conf.num_notes]
+    bass_pianoroll = model_output[:,conf.num_notes:conf.num_notes*2]
+    guit_pianoroll = model_output[:,conf.num_notes*2:conf.num_notes*3]
+    pian_pianoroll = model_output[:,conf.num_notes*3:]
+
+    drum_midi = piano_roll_to_midi(drum_pianoroll, 'drums', program=119, is_drum=True)
+    bass_midi = piano_roll_to_midi(bass_pianoroll, 'bass', program=34)
+    guit_midi = piano_roll_to_midi(guit_pianoroll, 'guitar', program=25)
+    pian_midi = piano_roll_to_midi(pian_pianoroll, 'piano', program=5)
+
+    midi = pretty_midi.PrettyMIDI()
+    midi.instruments.append(drum_midi)
+    midi.instruments.append(bass_midi)
+    midi.instruments.append(guit_midi)
+    midi.instruments.append(pian_midi)
+
     return midi
 
 def get_random_melody(midi_data, return_midi = False):
