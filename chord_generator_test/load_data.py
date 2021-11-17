@@ -96,6 +96,7 @@ def get_chords_and_melody(filename, binary=False, rand_data=False):
 
     if binary:
         melody_data[melody_data > 0] = 1
+        melody_data = melody_data.astype(bool)
 
     return chord_data, melody_data
 
@@ -109,6 +110,7 @@ def get_instruments(filename, binary=False, rand_data=False):
 
     if binary:
         instrument_data[instrument_data > 0] = 1
+        instrument_data = instrument_data.astype(bool)
 
     return instrument_data
 
@@ -134,5 +136,8 @@ def load_midi_unmod():
     print('success')
 
 if __name__ == "__main__":
-    get_instruments('0dd4d2b9fbcf96a0fa363a1918255e58.pickle')
+    _, test = get_chords_and_melody('0dd4d2b9fbcf96a0fa363a1918255e58.pickle')
+    _, test2 = get_chords_and_melody('0dd4d2b9fbcf96a0fa363a1918255e58.pickle', binary=True)
+    pickle.dump(test, open('size_test3.pickle', 'wb'))
+    pickle.dump(test2, open('size_test4pickle', 'wb'))
     print()

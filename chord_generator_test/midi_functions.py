@@ -70,9 +70,17 @@ def get_inst_roll(midi_data, inst_num):
 
     inst = midi_data.instruments[inst_num]
     pianoroll = np.zeros(piano_roll_shape)
-    inst_roll = inst.get_piano_roll(sampling_freq)
+    if inst.is_drum:
+        inst.is_drum = False
+        inst_roll = inst.get_piano_roll(sampling_freq)
+        inst.is_drum = True
+    else:
+        inst_roll = inst.get_piano_roll(sampling_freq)
     pianoroll[:, :inst_roll.shape[1]] += inst_roll
-    pianoroll = pianoroll[conf.pr_start_idx:conf.pr_end_idx,:]
+    if inst.is_drum:
+        pianoroll = pianoroll[36:60,:]
+    else:
+        pianoroll = pianoroll[conf.pr_start_idx:conf.pr_end_idx,:]
     return pianoroll
 
 def modulate(midi_data, num_steps):
@@ -229,21 +237,21 @@ def piano_roll_to_midi(piano_roll, name, program=0, is_drum=False):
     return instrument
 
 def get_poly_output_as_midi(model_output):
-    drum_pianoroll = model_output[:,:conf.num_notes]
-    bass_pianoroll = model_output[:,conf.num_notes:conf.num_notes*2]
-    guit_pianoroll = model_output[:,conf.num_notes*2:conf.num_notes*3]
-    pian_pianoroll = model_output[:,conf.num_notes*3:]
+    pian_pianoroll = model_output[:,:conf.num_notes]
+    guit_pianoroll = model_output[:,conf.num_notes:conf.num_notes*2]
+    bass_pianoroll = model_output[:,conf.num_notes*2:conf.num_notes*3]
+    drum_pianoroll = model_output[:,conf.num_notes*3:]
 
-    drum_midi = piano_roll_to_midi(drum_pianoroll, 'drums', program=119, is_drum=True)
-    bass_midi = piano_roll_to_midi(bass_pianoroll, 'bass', program=34)
-    guit_midi = piano_roll_to_midi(guit_pianoroll, 'guitar', program=25)
     pian_midi = piano_roll_to_midi(pian_pianoroll, 'piano', program=5)
+    guit_midi = piano_roll_to_midi(guit_pianoroll, 'guitar', program=25)
+    bass_midi = piano_roll_to_midi(bass_pianoroll, 'bass', program=34)
+    drum_midi = piano_roll_to_midi(drum_pianoroll, 'drums', program=119, is_drum=True)
 
     midi = pretty_midi.PrettyMIDI()
-    midi.instruments.append(drum_midi)
-    midi.instruments.append(bass_midi)
-    midi.instruments.append(guit_midi)
     midi.instruments.append(pian_midi)
+    midi.instruments.append(guit_midi)
+    midi.instruments.append(bass_midi)
+    midi.instruments.append(drum_midi)
 
     return midi
 
@@ -299,12 +307,12 @@ def get_chord_progression(midi_data, chord_dict=None):
     return np.array(chord_progression)
     
 def get_instrument_tracks_combined(midi_data):
-    pr_shape = get_piano_roll(midi_data).T.shape
+    num_steps = get_piano_roll(midi_data).T.shape[0]
 
-    drum_track = np.zeros((pr_shape[0], conf.num_notes))
-    bass_track = np.zeros((pr_shape[0], conf.num_notes))
-    guit_track = np.zeros((pr_shape[0], conf.num_notes))
-    pian_track = np.zeros((pr_shape[0], conf.num_notes))
+    drum_track = np.zeros((num_steps, 24))
+    bass_track = np.zeros((num_steps, conf.num_notes))
+    guit_track = np.zeros((num_steps, conf.num_notes))
+    pian_track = np.zeros((num_steps, conf.num_notes))
     
     for i in range(len(midi_data.instruments)):
         inst_name = get_inst_type(midi_data.instruments[i])
@@ -323,15 +331,12 @@ def get_instrument_tracks_combined(midi_data):
         else:
             continue
     
-    comb_track = np.concatenate((drum_track, bass_track, guit_track, pian_track), axis=1)
+    comb_track = np.concatenate((pian_track, guit_track, bass_track, drum_track), axis=1)
     
     return comb_track
 
 if __name__ == "__main__":
     #get_inst_type(None)
-    piano_roll = pickle.load(open('chord_generator_test\data\pianoroll\d8e6e749b5aa26eef98b5c668203131f.pickle', 'rb'))
-    midi = piano_roll_to_midi(piano_roll)
-    if os.path.exists('chord_gen_test.mid'):
-        os.remove('chord_gen_test.mid')
-    midi.write('chord_gen_test.mid')
+    midi = pickle.load(open(os.path.join(conf.midi_mod_dir,'04266ac849c1d3814dc03bbf61511b33.pickle'), 'rb'))
+    inst = get_instrument_tracks_combined(midi)
     print()

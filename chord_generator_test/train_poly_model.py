@@ -18,13 +18,13 @@ import math
 import time
 import config as conf
 
-model_path = os.path.join(conf.chord_model_dir, 'epoch001.hdf5')
+model_path = os.path.join(conf.chord_model_dir, 'epoch099.hdf5')
 
-lstm_size = 1024
+lstm_size = 512
 learning_rate = 0.00001
 num_notes = conf.num_notes
 embedding_size = 10
-vocabulary = num_notes*4
+vocabulary = (num_notes*3) + 24
 max_steps = 128
 chord_interval = 16
 

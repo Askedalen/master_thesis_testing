@@ -10,7 +10,7 @@ import pretty_midi
 import data_preparation
 import _pickle as pickle
 
-np.random.seed(2021)
+np.random.seed(2020)
 
 num_steps = 128
 chord_interval = 16
@@ -18,7 +18,7 @@ number_of_melodies = 10
 threshold = 0.25
 
 chord_best_epoch = 99
-poly_best_epoch = 85
+poly_best_epoch = 96
 
 chord_model_filename = os.path.join(conf.chord_model_dir, f'epoch{chord_best_epoch:03d}.hdf5')
 poly_model_filename = os.path.join(conf.poly_model_dir, f'epoch{poly_best_epoch:03d}.hdf5')
@@ -51,7 +51,7 @@ for i in range(number_of_melodies):
         next_chord = np.random.choice(len(prediction[j][0]), p=prediction[j][0])
         chord_output[j+1] = next_chord
 
-    model_output = np.zeros((num_steps, conf.num_notes*4))
+    model_output = np.zeros((num_steps, (conf.num_notes*3)+24))
     melody_expanded = np.reshape(melody, (-1, conf.num_notes))
     chord_embedding = load.ChordEmbedding(chord_model_filename)
     embedded_chords = chord_embedding.embed_chords_song(chord_output)

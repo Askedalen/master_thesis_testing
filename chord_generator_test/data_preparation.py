@@ -122,7 +122,7 @@ def create_chord_dict(num_files=0, vocabulary=100, chord_interval=16):
     pickle.dump(chord_dict, open('chord_dict.pickle', 'wb'))
     print(f'Generated chord dictionary in {end_time - start_time} seconds.')
 
-def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=60):
+def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=60, binary=False):
     files = load_data.list_pickle_files('midi_mod', num_files)
     chord_dict, _ = load_data.get_chord_dict()
     num_failed = 0
@@ -165,6 +165,12 @@ def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=60):
             melody[-chords_rest_steps:,:] = 0
             instruments[-chords_rest_steps*chord_interval] = 0
 
+        if binary:
+            melody[melody > 0] = 1
+            melody = melody.astype(bool)
+            instruments[instruments > 0] = 1
+            instruments = instruments.astype(bool)
+
         # Store chord progression and melody
         pickle.dump(chords, open(chords_file, 'wb'))
         pickle.dump(melody, open(melody_file, 'wb'))
@@ -199,6 +205,6 @@ if __name__ == "__main__":
     #midi_to_pickle()
     #normalize_keys()
     #create_chord_dict()
-    create_ML_data()
+    create_ML_data(binary=True)
     #list_midi_files()
     #print()
