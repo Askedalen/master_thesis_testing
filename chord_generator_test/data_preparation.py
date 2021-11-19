@@ -11,8 +11,8 @@ import math
 import matplotlib.pyplot as plt
 import _pickle as pickle
 
-np.random.seed(2020)
-log_interval = 100
+np.random.seed(2021)
+log_interval = 10
 
 def list_midi_files():
     song_list = []

@@ -1,19 +1,12 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Dense, LSTM, Activation, Embedding, Input, TimeDistributed
-from tensorflow.keras.layers import Concatenate, add, concatenate
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, LSTM, Activation
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import ModelCheckpoint, Callback
-from tensorflow.keras.utils import to_categorical
-from tensorflow.python.keras.backend import reshape, function
-from tensorflow.python.keras.engine import input_spec
-from tensorflow.python.keras.layers.core import Reshape
-from tensorflow.keras.models import load_model
 from load_data import get_trainval_filenames
-import load_data
 from generator import poly_data_generator, count_steps
+import load_data
 import math
 import time
 import config as conf
@@ -27,18 +20,21 @@ embedding_size = 10
 vocabulary = (num_notes*3) + 24
 max_steps = 128
 chord_interval = 16
+load_all_data = True
 
 if conf.testing:
     batch_size = 8
     val_batch_size = 4
     epochs = 2
     num_songs = 20
+    test_step = 10 
     verbose = 1
 else:
     batch_size = 128
     val_batch_size = 32
     epochs = 100
     num_songs = 0
+    test_step = 300
     verbose = 2
 
 params = {'max_steps':max_steps,
@@ -52,14 +48,33 @@ print(f'Counting steps for {len(train_filenames) + len(val_filenames)} files')
 training_steps = count_steps(train_filenames, batch_size, generator_num=1, chord_embedding=chord_embedding, **params)
 val_steps = count_steps(val_filenames, val_batch_size, generator_num=1, chord_embedding=chord_embedding, **params)
 print(f'Training steps: {training_steps} \r\nVal steps: {val_steps}')
-training_generator = poly_data_generator(train_filenames, chord_embedding, batch_size=batch_size, **params)
-val_generator = poly_data_generator(val_filenames, chord_embedding, batch_size=val_batch_size, **params)
+if load_all_data:
+    print('Loading all data...')
+    training_generator = poly_data_generator(train_filenames, chord_embedding, batch_size=batch_size, infinite=False, **params)
+    val_generator = poly_data_generator(val_filenames, chord_embedding, batch_size=val_batch_size, infinite=False, **params)
+
+    training_x = []
+    training_y = []
+    for x, y in training_generator:
+        training_x.append(x)
+        training_y.append(y)
+
+    val_x = []
+    val_y = []
+    for x, y in val_generator:
+        val_x.append(x)
+        val_y.append(y)
+    print('Done loading data')
+else:
+    training_generator = poly_data_generator(train_filenames, chord_embedding, batch_size=batch_size, **params)
+    val_generator = poly_data_generator(val_filenames, chord_embedding, batch_size=val_batch_size, **params)
+
 optimizer = Adam(learning_rate=learning_rate)
 loss = 'binary_crossentropy'
 print('Creating model...')
 
 model = Sequential()
-model.add(LSTM(lstm_size, input_shape=(params['max_steps'], num_notes + params['chord_interval'] + embedding_size), return_sequences=True))
+model.add(LSTM(lstm_size, input_shape=(max_steps, num_notes + chord_interval + embedding_size), return_sequences=True))
 model.add(Dense(vocabulary))
 model.add(Activation('sigmoid'))
 
@@ -74,16 +89,52 @@ def train():
     start_time = time.time()
     for e in range(1, epochs+1):
         print('Epoch', e, 'of', epochs)
-        hist = model.fit(training_generator, validation_data=val_generator, epochs=1, shuffle=False, verbose=verbose, steps_per_epoch=training_steps, validation_steps=val_steps)
-        model.reset_states()
+        epoch_start_time = time.time()
+        if load_all_data:
+            loss = 0
+            acc = 0
+            for batch in range(len(training_x)):
+                x = training_x[batch]
+                y = training_y[batch]
+                hist = model.fit(x, y, epochs=1, shuffle=False, verbose=0)
+                model.reset_states()
+                loss += hist.history['loss'][0]
+                acc += hist.history['accuracy'][0]
 
-        losses[0, e-1] = hist.history['loss'][0]
-        losses[1, e-1] = hist.history['val_loss'][0]
-        accuracies[0, e-1] = hist.history['accuracy'][0]
-        accuracies[1, e-1] = hist.history['val_accuracy'][0]
+            mean_loss = loss / len(training_x)
+            mean_acc = acc / len(training_x)
+            losses[0, e-1] = mean_loss
+            accuracies[0, e-1] = mean_acc
+            print(f'Finished {training_steps} steps - loss: {mean_loss}, acc: {mean_acc}')
+            test(e)
+        else:
+            hist = model.fit(training_generator, validation_data=val_generator, epochs=1, shuffle=False, verbose=verbose, steps_per_epoch=training_steps, validation_steps=val_steps)
+            model.reset_states()
+            losses[0, e-1] = hist.history['loss'][0]
+            losses[1, e-1] = hist.history['val_loss'][0]
+            accuracies[0, e-1] = hist.history['accuracy'][0]
+            accuracies[1, e-1] = hist.history['val_accuracy'][0]
+        
+        epoch_end_time = time.time()
+        print(f'Epoch time: {epoch_end_time - epoch_start_time}s')
         model.save(os.path.join(conf.poly_model_dir, f'epoch{e:03d}.hdf5'))
     end_time = time.time()
     print(f'Finished training in {end_time - start_time} seconds')
+
+def test(e):
+    val_loss = 0
+    val_acc = 0
+    for batch in range(len(val_x)):
+        x = val_x[batch]
+        y = val_y[batch]
+        hist = model.evaluate(x, y, verbose=0)
+        val_loss += hist[0]
+        val_acc += hist[1]
+    mean_val_loss = val_loss / len(val_x)
+    mean_val_acc = val_acc / len(val_x)
+    losses[1, e-1] = mean_val_loss
+    accuracies[1, e-1] = mean_val_acc
+    print(f'val_loss:{mean_val_loss}, val_acc:{mean_val_acc}')
 
 def plot_results():        
     plt.figure()

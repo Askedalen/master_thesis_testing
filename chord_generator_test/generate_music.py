@@ -17,8 +17,8 @@ chord_interval = 16
 number_of_melodies = 10
 threshold = 0.25
 
-chord_best_epoch = 99
-poly_best_epoch = 96
+chord_best_epoch = 100
+poly_best_epoch = 99
 
 chord_model_filename = os.path.join(conf.chord_model_dir, f'epoch{chord_best_epoch:03d}.hdf5')
 poly_model_filename = os.path.join(conf.poly_model_dir, f'epoch{poly_best_epoch:03d}.hdf5')
@@ -31,7 +31,7 @@ poly_model = load_model(poly_model_filename)
 for i in range(number_of_melodies):
     random_song = melody_filenames[np.random.randint(0, len(melody_filenames))]
     folder_name = os.path.basename(random_song).replace('.pickle', '')
-    print(f"Generating chords for {folder_name}")
+    print(f"Generating accompaniment for {folder_name}")
 
     melody = pickle.load(open(random_song, 'rb'))
     melody[melody > 0] = 1
@@ -84,6 +84,7 @@ for i in range(number_of_melodies):
 
     # Get melody as MIDI
     pianoroll_melody = melody_expanded[melody_start*chord_interval:(melody_start*chord_interval)+num_steps]
+    pianoroll_melody = pianoroll_melody.astype(float)
     pianoroll_melody[pianoroll_melody > 0] = 100
     melody_midi = mf.piano_roll_to_midi(pianoroll_melody, 'melody', program=66)
     melody_midi_solo = pretty_midi.PrettyMIDI()
