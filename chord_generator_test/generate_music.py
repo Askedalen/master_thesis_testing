@@ -10,11 +10,11 @@ import pretty_midi
 import data_preparation
 import _pickle as pickle
 
-np.random.seed(2020)
+np.random.seed(2021)
 
 num_steps = 128
 chord_interval = 16
-number_of_melodies = 10
+number_of_melodies = 100
 threshold = 0.25
 
 chord_best_epoch = 100
@@ -23,13 +23,16 @@ poly_best_epoch = 99
 chord_model_filename = os.path.join(conf.chord_model_dir, f'epoch{chord_best_epoch:03d}.hdf5')
 poly_model_filename = os.path.join(conf.poly_model_dir, f'epoch{poly_best_epoch:03d}.hdf5')
 
-melody_filenames = load.list_pickle_files('melodies')
+melody_filenames = pickle.load(open('val_filenames.pickle', 'rb'))
 
 chord_model = load_model(chord_model_filename)
 poly_model = load_model(poly_model_filename)
 
 for i in range(number_of_melodies):
-    random_song = melody_filenames[np.random.randint(0, len(melody_filenames))]
+    random_song = os.path.join(conf.melody_dir, melody_filenames[i])#melody_filenames[np.random.randint(0, len(melody_filenames))]
+    if not os.path.exists(random_song):
+        print('not exist')
+        continue
     folder_name = os.path.basename(random_song).replace('.pickle', '')
     print(f"Generating accompaniment for {folder_name}")
 

@@ -24,17 +24,15 @@ load_all_data = True
 
 if conf.testing:
     batch_size = 8
-    val_batch_size = 4
+    val_batch_size = 8
     epochs = 2
     num_songs = 20
-    test_step = 10 
     verbose = 1
 else:
     batch_size = 128
-    val_batch_size = 32
+    val_batch_size = 128
     epochs = 100
     num_songs = 0
-    test_step = 300
     verbose = 2
 
 params = {'max_steps':max_steps,
@@ -74,7 +72,7 @@ loss = 'binary_crossentropy'
 print('Creating model...')
 
 model = Sequential()
-model.add(LSTM(lstm_size, input_shape=(max_steps, num_notes + chord_interval + embedding_size), return_sequences=True))
+model.add(LSTM(lstm_size, batch_size=batch_size, input_shape=(max_steps, num_notes + chord_interval + embedding_size), stateful=True, return_sequences=True))
 model.add(Dense(vocabulary))
 model.add(Activation('sigmoid'))
 
@@ -96,7 +94,7 @@ def train():
             for batch in range(len(training_x)):
                 x = training_x[batch]
                 y = training_y[batch]
-                hist = model.fit(x, y, epochs=1, shuffle=False, verbose=0)
+                hist = model.fit(x, y, batch_size=batch_size, epochs=1, shuffle=False, verbose=0)
                 model.reset_states()
                 loss += hist.history['loss'][0]
                 acc += hist.history['accuracy'][0]

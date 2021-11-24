@@ -2,6 +2,7 @@ lmd_matched/
 chord_generator_test/results/generated_music/
 chord_generator_test/results/models/
 chord_generator_test/results/*.png
+chord_generator_test/results/selected_results/
 *.pickle
 *.midi
 *.tar.gz
