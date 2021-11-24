@@ -16,7 +16,7 @@ import _pickle as pickle
 
 np.random.seed(2021)
 
-def chord_data_generator(song_list, batch_size = 8, max_steps=8, chord_interval=16, num_notes=60, vocabulary=100, infinite=True, rand_data=False):
+def chord_data_generator(song_list, batch_size=8, max_steps=8, vocabulary=100, infinite=True, rand_data=False):
     chord_dim = (max_steps, 1)
     while True:
         np.random.shuffle(song_list)

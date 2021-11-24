@@ -21,8 +21,11 @@ def get_chord_dict():
     return chord_to_index, index_to_chord
 
 class ChordEmbedding:
-    def __init__(self, model_path):
-        self.model = load_model(model_path)
+    def __init__(self, model):
+        if type(model) == "string":
+            self.model = load_model(model)
+        else:
+            self.model = model
         self.model.reset_states()
         self.embed_layer_output = function([self.model.layers[2].input], [self.model.layers[2].output])
         self.chord_to_index, self.index_to_chords = get_chord_dict()
