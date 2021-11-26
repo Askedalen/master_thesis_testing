@@ -23,10 +23,10 @@ chord_interval = 16
 load_all_data = True
 
 if conf.testing:
-    batch_size = 8
-    val_batch_size = 8
+    batch_size = 128
+    val_batch_size = 128
     epochs = 2
-    num_songs = 20
+    num_songs = 0
     verbose = 1
 else:
     batch_size = 128

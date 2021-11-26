@@ -16,7 +16,7 @@ import _pickle as pickle
 
 np.random.seed(2021)
 
-def chord_data_generator(song_list, batch_size=8, max_steps=8, vocabulary=100, infinite=True, rand_data=False):
+def chord_data_generator(song_list, batch_size=8, max_steps=8, vocabulary=100, infinite=True, rand_data=False, **args):
     chord_dim = (max_steps, 1)
     while True:
         np.random.shuffle(song_list)
@@ -50,9 +50,10 @@ def chord_data_generator(song_list, batch_size=8, max_steps=8, vocabulary=100, i
         if not infinite:
             break
 
-def poly_data_generator(song_list, chord_embedding, batch_size = 8, max_steps=128, chord_interval=16, num_notes=60, infinite=True, rand_data=False):
+def poly_data_generator(song_list, chord_embedding=None, batch_size = 8, max_steps=128, chord_interval=16, num_notes=60, infinite=True, rand_data=False, **args):
     while True:
         np.random.shuffle(song_list)
+        batch_chords = []
         batch_inputs = []
         batch_targets = []
         for song in song_list:
@@ -60,17 +61,25 @@ def poly_data_generator(song_list, chord_embedding, batch_size = 8, max_steps=12
             chord_data, melody_data = load_data.get_chords_and_melody(song, binary=True, rand_data=rand_data)
             num_sequences = math.floor(instrument_data.shape[0] / max_steps)
             
-            embedded_chords = chord_embedding.embed_chords_song(chord_data)
+            if chord_embedding is not None:
+                embedded_chords = chord_embedding.embed_chords_song(chord_data)
             melody_expanded = np.reshape(melody_data, (-1, num_notes))
 
             for i in range(num_sequences):
                 current_step = math.floor((i*max_steps)/chord_interval)
                 next_step = math.floor(((i+1)*max_steps)/chord_interval)
-                seq_chords = embedded_chords[:-1][current_step:next_step,]
-                seq_chords_expanded = np.repeat(seq_chords, chord_interval, axis=0)
                 seq_melody = melody_expanded[:-1][i*max_steps:(i+1)*max_steps,]
                 counter = to_categorical(np.tile(range(chord_interval), math.floor(max_steps/chord_interval)), num_classes=chord_interval)
-                X = np.concatenate((seq_chords_expanded, seq_melody, counter), axis=1)
+                if chord_embedding is not None:
+                    seq_chords = embedded_chords[:-1][current_step:next_step,]
+                    seq_chords_expanded = np.repeat(seq_chords, chord_interval, axis=0)
+                    X = np.concatenate((seq_chords_expanded, seq_melody, counter), axis=1)
+                else:
+                    seq_chords = chord_data[:-1][current_step:next_step,]
+                    seq_chords_expanded = np.repeat(seq_chords, chord_interval, axis=0)
+                    seq_chords_expanded = np.reshape(seq_chords_expanded, (max_steps, 1))
+                    batch_chords.append(seq_chords_expanded)
+                    X = np.concatenate((seq_melody, counter), axis=1)
                 y = instrument_data[1:][i*max_steps:(i+1)*max_steps,]
                 batch_inputs.append(X)
                 batch_targets.append(y)
@@ -78,12 +87,31 @@ def poly_data_generator(song_list, chord_embedding, batch_size = 8, max_steps=12
                 if len(batch_inputs) == batch_size:
                     X_out = np.array(batch_inputs)
                     y_out = np.array(batch_targets)
-                    yield X_out, y_out
-
+                    if chord_embedding is not None:
+                        yield X_out, y_out
+                    else:
+                        chord_out = np.array(batch_chords)
+                        yield [chord_out, X_out], y_out
+                    batch_chords = []
                     batch_inputs = []
                     batch_targets = []
         if not infinite:
             break
+
+def embed_poly_chords(chords, Xs, chord_embedding, chord_interval=16, **args):
+    batches = []
+    emb_start = time.time()
+    embedded_chords = chord_embedding.embed_chords_song(np.array(chords).flatten())
+    emb_end = time.time()
+    print(f'emb time:{emb_end - emb_start}')
+    for step in range(len(Xs)):
+        s_start = time.time()
+        for batch in range(len(Xs[step])):
+            embedded_chords_expanded = np.repeat(embedded_chords, chord_interval, axis=0)
+            concat = np.concatenate((Xs[step][batch], embedded_chords_expanded), axis=1)
+            batches.append(concat)
+
+    return batches
 
 def count_steps(filenames, batch_size = 8, generator_num = 0, chord_embedding = None, **params):
     previous_counts = []

@@ -22,13 +22,12 @@ def get_chord_dict():
 
 class ChordEmbedding:
     def __init__(self, model):
-        if type(model) == "string":
+        if isinstance(model, str):
             self.model = load_model(model)
         else:
             self.model = model
         self.model.reset_states()
         self.embed_layer_output = function([self.model.layers[2].input], [self.model.layers[2].output])
-        self.chord_to_index, self.index_to_chords = get_chord_dict()
 
     def embed_chord(self, chord):
         return self.embed_layer_output([[[chord]]])[0]
@@ -119,9 +118,9 @@ def get_instruments(filename, binary=False, rand_data=False):
 
 def get_trainval_filenames(num_songs=0, rand_data=False):
     if rand_data:
-        data_path = os.path.join(conf.random_data_dir, 'melodies')
+        data_path = os.path.join(conf.random_data_dir, 'chords')
     else:
-        data_path = os.path.join(conf.data_dir, 'melodies')
+        data_path = os.path.join(conf.data_dir, 'chords')
     data_files = [path for path in os.listdir(data_path) if '.pickle' in path]
     if num_songs > 0:
         data_files = data_files[:num_songs]
@@ -139,8 +138,8 @@ def load_midi_unmod():
     print('success')
 
 if __name__ == "__main__":
-    _, test = get_chords_and_melody('0dd4d2b9fbcf96a0fa363a1918255e58.pickle')
+    """  _, test = get_chords_and_melody('0dd4d2b9fbcf96a0fa363a1918255e58.pickle')
     _, test2 = get_chords_and_melody('0dd4d2b9fbcf96a0fa363a1918255e58.pickle', binary=True)
     pickle.dump(test, open('size_test3.pickle', 'wb'))
-    pickle.dump(test2, open('size_test4pickle', 'wb'))
+    pickle.dump(test2, open('size_test4pickle', 'wb')) """
     print()
