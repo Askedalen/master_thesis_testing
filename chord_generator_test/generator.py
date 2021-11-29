@@ -23,7 +23,9 @@ def chord_data_generator(song_list, batch_size=8, max_steps=8, vocabulary=100, i
         batch_chord_inputs = []
         batch_melody_inputs = []
         batch_targets = []
-        for song in song_list:
+        for i, song in enumerate(song_list):
+            #if (i+1) % 100 == 0:
+            #    print(f'Loaded {i+1} songs.')
             current_chords, current_melody = load_data.get_chords_and_melody(song, binary=True, rand_data=rand_data)
 
             num_sequences = math.floor(current_chords.shape[0] / max_steps)
@@ -56,7 +58,9 @@ def poly_data_generator(song_list, chord_embedding=None, batch_size = 8, max_ste
         batch_chords = []
         batch_inputs = []
         batch_targets = []
-        for song in song_list:
+        for i, song in enumerate(song_list):
+            #if (i+1) % 100 == 0:
+            #    print(f'Loaded {i+1} songs.')
             instrument_data = load_data.get_instruments(song, binary=True, rand_data=rand_data)
             chord_data, melody_data = load_data.get_chords_and_melody(song, binary=True, rand_data=rand_data)
             num_sequences = math.floor(instrument_data.shape[0] / max_steps)
