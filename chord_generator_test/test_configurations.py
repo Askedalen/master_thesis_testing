@@ -317,105 +317,13 @@ def yield_data(data):
 
 if __name__ == "__main__":
     train_filenames, val_filenames = load.get_trainval_filenames(rand_data=conf.random_data)
-    batch_sizes = [64, 128, 256, 512]
-
-    best_cbs = 64
-    best_pbs = 64
-    best_bs_val_acc = 0
-
-    for cbs in batch_sizes:
-        for pbs in batch_sizes:
-            print()
-            print(f'Testing cbs{cbs} and pbs{pbs}')
-            chord_config = {'batch_size':cbs,
-                            'vocabulary':100,
-                            'max_steps':8,
-                            'num_notes':60,
-                            'chord_interval':16}
-
-            poly_config = {'batch_size':pbs,
-                        'vocabulary':(conf.num_notes*3)+24,
-                        'max_steps':128,
-                        'num_notes':60,
-                        'chord_interval':16}
-            # Get chord data
-            print('Loading data...')
-            #print()
-            #print('Loading chord data...')
-            chord_training_generator = chord_data_generator(train_filenames, infinite=False, **chord_config)
-            chord_val_generator = chord_data_generator(val_filenames, infinite=False, **chord_config)
-            chord_training_data = []
-            #print('Loding training data...')
-            for x, y in chord_training_generator:
-                chord_training_data.append([x, y])
-            chord_val_data = []
-            #print()
-            #print('Loading val data...')
-            for x, y in chord_val_generator:
-                chord_val_data.append([x, y])
-                
-            chord_training_steps = len(chord_training_data)
-            chord_training_data = yield_data(chord_training_data)
-            chord_val_steps = len(chord_val_data)
-            chord_val_data = yield_data(chord_val_data)
-
-            # Get polyphonic data
-            #print()
-            #print('Loading polyphonic data...')
-            poly_training_generator = poly_data_generator(train_filenames, infinite=False, **poly_config)
-            poly_val_generator = poly_data_generator(val_filenames, infinite=False, **poly_config)
-            poly_training_data = []
-            #print('Loading training data...')
-            for x, y in poly_training_generator:
-                poly_training_data.append([x, y])
-            poly_val_data = []
-            #print()
-            #print('Loading val data...')
-            for x, y in poly_val_generator:
-                poly_val_data.append([x, y])
-
-            poly_training_steps = len(poly_training_data)
-            poly_training_data = yield_data(poly_training_data)
-            poly_val_steps = len(poly_val_data)
-            poly_val_data = yield_data(poly_val_data)
-
-            chord_config.update({'lstm_size':512,
-                                'learning_rate':0.0001,
-                                'embedding_size':10,
-                                'epochs':50,
-                                'verbose':0})
-
-            poly_config.update({'lstm_size':512,
-                                'learning_rate':0.0001,
-                                'embedding_size':10,
-                                'epochs':50,
-                                'verbose':0})
-            
-            model = FullModel(chord_config, poly_config)
-
-            print()
-            print('Training chord model...')
-            model.train_chord_model(chord_training_data, chord_training_steps, chord_val_data, chord_val_steps)
-            print()
-            print('Training polyphonic model...')
-            model.train_poly_model(poly_training_data, poly_training_steps, poly_val_data, poly_val_steps)
-            model.plot_history()
-            model.save_models()
-            val_acc = model.get_best_val_acc()
-            if val_acc > best_bs_val_acc:
-                best_cbs = cbs
-                best_pbs = pbs
-                best_bs_val_acc = val_acc
-
-    print(f'Best cbs:{best_cbs}, best pbs:{best_pbs}')
-    print()
-    chord_config = {'batch_size':best_cbs,
+    chord_config = {'batch_size':128,
                     'vocabulary':100,
                     'max_steps':8,
                     'num_notes':60,
                     'chord_interval':16}
 
-    poly_config = {'batch_size':best_pbs,
+    poly_config = {'batch_size':256,
                     'vocabulary':(conf.num_notes*3)+24,
                     'max_steps':128,
                     'num_notes':60,
@@ -461,47 +369,7 @@ if __name__ == "__main__":
     poly_val_steps = len(poly_val_data)
     poly_val_data = yield_data(poly_val_data)
 
-    lstm_sizes = [256, 512, 1024]
-    best_cls = 256
-    best_pls = 256
-    best_ls_val_acc = 0
-
-    for cls in lstm_sizes:
-        for pls in lstm_sizes:
-            print()
-            print(f'Testing cls{cls} and pls{pls}')
-            chord_config.update({'lstm_size':cls,
-                                'learning_rate':0.0001,
-                                'embedding_size':10,
-                                'epochs':50,
-                                'verbose':0})
-
-            poly_config.update({'lstm_size':pls,
-                                'learning_rate':0.0001,
-                                'embedding_size':10,
-                                'epochs':50,
-                                'verbose':0})
-            
-            model = FullModel(chord_config, poly_config)
-
-            print()
-            print('Training chord model...')
-            model.train_chord_model(chord_training_data, chord_training_steps, chord_val_data, chord_val_steps)
-            print()
-            print('Training polyphonic model...')
-            model.train_poly_model(poly_training_data, poly_training_steps, poly_val_data, poly_val_steps)
-            model.plot_history()
-            model.save_models()
-            val_acc = model.get_best_val_acc()
-            if val_acc > best_ls_val_acc:
-                best_cls = cls
-                best_pls = pls
-                best_ls_val_acc = val_acc
-
-    print(f'Best cls:{best_cls}, best pls:{best_pls}')
-    print()
-
-    learning_rates = [0.01, 0.001, 0.0001, 0.00001]
+    learning_rates = [0.01, 0.001, 0.0005, 0.0001, 0.00005, 0.00001, 0.000005, 0.000001]
     best_clr = 0.0001
     best_plr = 0.0001
     best_lr_val_acc = 0
@@ -510,16 +378,16 @@ if __name__ == "__main__":
         for plr in learning_rates:
             print()
             print(f'Testing clr{clr} and plr{plr}')
-            chord_config.update({'lstm_size':best_cls,
+            chord_config.update({'lstm_size':512,
                                 'learning_rate':clr,
                                 'embedding_size':10,
-                                'epochs':50,
+                                'epochs':100,
                                 'verbose':0})
 
-            poly_config.update({'lstm_size':best_pls,
+            poly_config.update({'lstm_size':1024,
                                 'learning_rate':plr,
                                 'embedding_size':10,
-                                'epochs':50,
+                                'epochs':100,
                                 'verbose':0})
             
             model = FullModel(chord_config, poly_config)
@@ -541,50 +409,7 @@ if __name__ == "__main__":
     print(f'Best clr:{best_clr}, best plr:{best_plr}')
     print()
 
-    num_epochs = [10, 20, 50, 100, 200]
-    best_cepochs = 10
-    best_pepochs = 10
-    best_epoch_val_acc = 0
-
-    for cepochs in num_epochs:
-        for pepochs in num_epochs:
-            print()
-            print(f'Testing cepochs{cepochs} and pepochs{pepochs}')
-            chord_config.update({'lstm_size':best_cls,
-                                'learning_rate':best_clr,
-                                'embedding_size':10,
-                                'epochs':cepochs,
-                                'verbose':0})
-
-            poly_config.update({'lstm_size':best_pls,
-                                'learning_rate':best_plr,
-                                'embedding_size':10,
-                                'epochs':pepochs,
-                                'verbose':0})
-            
-            model = FullModel(chord_config, poly_config)
-
-            print()
-            print('Training chord model...')
-            model.train_chord_model(chord_training_data, chord_training_steps, chord_val_data, chord_val_steps)
-            print()
-            print('Training polyphonic model...')
-            model.train_poly_model(poly_training_data, poly_training_steps, poly_val_data, poly_val_steps)
-            model.plot_history()
-            model.save_models()
-            val_acc = model.get_best_val_acc()
-            if val_acc > best_epoch_val_acc:
-                best_cepochs = cepochs
-                best_pepochs = pepochs
-                best_epoch_val_acc = val_acc
-
     print()
     print('SUMMARY:')
-    print(f'Best chord batch size: {best_cbs}')
-    print(f'Best chord lstm size: {best_cls}')
     print(f'Best chord learning rate: {best_clr}')
-    print(f'Best chord num epochs: {best_cepochs}')
-    print(f'Best poly batch size: {best_pbs}')
-    print(f'Best poly lstm size: {best_pls}')
     print(f'Best poly learning rate: {best_plr}')
-    print(f'Best poly num epochs: {best_pepochs}')

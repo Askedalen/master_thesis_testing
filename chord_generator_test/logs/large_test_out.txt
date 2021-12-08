@@ -1,0 +1,713 @@
+Loading data...
+
+Testing cls256 and pls256
+
+Training chord model...
+Trained chord model for 50 epochs in 208.05 seconds. Best epoch: 50
+mean loss:2.83424521446228, best acc:0.33171606063842773
+mean val loss:2.8917115259170534, best val acc:0.3066244423389435
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 771.06 seconds. Best epoch: 41
+mean loss:0.07794112756848336, best acc:0.06428282707929611
+mean val loss:0.07780491679906845, best val acc:0.06354426592588425
+
+
+Testing cls256 and pls512
+
+Training chord model...
+Trained chord model for 50 epochs in 193.33 seconds. Best epoch: 50
+mean loss:2.8321633768081664, best acc:0.33231213688850403
+mean val loss:2.890456829071045, best val acc:0.30917903780937195
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 1551.92 seconds. Best epoch: 48
+mean loss:0.07676546663045883, best acc:0.06706482917070389
+mean val loss:0.07710424780845643, best val acc:0.06437713652849197
+
+
+Testing cls256 and pls1024
+
+Training chord model...
+Trained chord model for 50 epochs in 192.32 seconds. Best epoch: 50
+mean loss:2.835623254776001, best acc:0.33185407519340515
+mean val loss:2.893709759712219, best val acc:0.30816367268562317
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3427.75 seconds. Best epoch: 50
+mean loss:0.07565922230482101, best acc:0.06925668567419052
+mean val loss:0.07619138270616531, best val acc:0.07209990173578262
+
+
+Testing cls512 and pls256
+
+Training chord model...
+Trained chord model for 50 epochs in 216.42 seconds. Best epoch: 50
+mean loss:2.769068508148193, best acc:0.36370012164115906
+mean val loss:2.871274461746216, best val acc:0.31512895226478577
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 769.97 seconds. Best epoch: 49
+mean loss:0.0779869656264782, best acc:0.06516880542039871
+mean val loss:0.07782858163118363, best val acc:0.061894096434116364
+
+
+Testing cls512 and pls512
+
+Training chord model...
+Trained chord model for 50 epochs in 214.13 seconds. Best epoch: 49
+mean loss:2.7651688385009767, best acc:0.36386996507644653
+mean val loss:2.8651675939559937, best val acc:0.31629952788352966
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 1547.69 seconds. Best epoch: 45
+mean loss:0.07658758953213692, best acc:0.0670500248670578
+mean val loss:0.07684647902846337, best val acc:0.0688953548669815
+
+
+Testing cls512 and pls1024
+
+Training chord model...
+Trained chord model for 50 epochs in 220.81 seconds. Best epoch: 50
+mean loss:2.763227367401123, best acc:0.36491674184799194
+mean val loss:2.86400173664093, best val acc:0.31630924344062805
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3439.92 seconds. Best epoch: 39
+mean loss:0.07543201580643653, best acc:0.0701586902141571
+mean val loss:0.07603234589099885, best val acc:0.07502918690443039
+
+
+Testing cls1024 and pls256
+
+Training chord model...
+Trained chord model for 50 epochs in 397.10 seconds. Best epoch: 29
+mean loss:2.5913832569122315, best acc:0.4633233845233917
+mean val loss:2.898328070640564, best val acc:0.30681848526000977
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 772.76 seconds. Best epoch: 50
+mean loss:0.07810076549649239, best acc:0.06455784291028976
+mean val loss:0.07793870598077773, best val acc:0.0674683004617691
+
+
+Testing cls1024 and pls512
+
+Training chord model...
+Trained chord model for 50 epochs in 391.75 seconds. Best epoch: 33
+mean loss:2.6000360584259035, best acc:0.46250930428504944
+mean val loss:2.9033012342453004, best val acc:0.30754926800727844
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 1546.23 seconds. Best epoch: 50
+mean loss:0.07663203835487366, best acc:0.06693790853023529
+mean val loss:0.0769424407184124, best val acc:0.06715080142021179
+
+
+Testing cls1024 and pls1024
+
+Training chord model...
+Trained chord model for 50 epochs in 390.91 seconds. Best epoch: 28
+mean loss:2.5897701930999757, best acc:0.46607261896133423
+mean val loss:2.9028791046142577, best val acc:0.30808281898498535
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3434.14 seconds. Best epoch: 41
+mean loss:0.07557781442999839, best acc:0.06961799412965775
+mean val loss:0.07616213232278823, best val acc:0.06671547144651413
+
+Best cls:512, best pls:1024
+
+
+Testing clr0.01 and plr0.01
+
+Training chord model...
+Trained chord model for 50 epochs in 209.88 seconds. Best epoch: 23
+mean loss:2.7611918544769285, best acc:0.31830793619155884
+mean val loss:2.87810613155365, best val acc:0.2937157154083252
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3295.57 seconds. Best epoch: 25
+mean loss:0.10184842705726624, best acc:0.012732413597404957
+mean val loss:0.10070543020963668, best val acc:0.030119232833385468
+
+
+Testing clr0.01 and plr0.001
+
+Training chord model...
+Trained chord model for 50 epochs in 207.71 seconds. Best epoch: 28
+mean loss:2.7490853548049925, best acc:0.3216826319694519
+mean val loss:2.878383584022522, best val acc:0.29452091455459595
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3431.26 seconds. Best epoch: 24
+mean loss:0.0692081880569458, best acc:0.08807720243930817
+mean val loss:0.07309641122817993, best val acc:0.07473573088645935
+
+
+Testing clr0.01 and plr0.0001
+
+Training chord model...
+Trained chord model for 50 epochs in 210.32 seconds. Best epoch: 33
+mean loss:2.7403964233398437, best acc:0.3235418498516083
+mean val loss:2.8748571157455443, best val acc:0.2969396710395813
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3447.85 seconds. Best epoch: 49
+mean loss:0.07562826842069625, best acc:0.06948056071996689
+mean val loss:0.07622696861624717, best val acc:0.07460638135671616
+
+
+Testing clr0.01 and plr1e-05
+
+Training chord model...
+Trained chord model for 50 epochs in 211.71 seconds. Best epoch: 21
+mean loss:2.748050036430359, best acc:0.3214458227157593
+mean val loss:2.87403591632843, best val acc:0.29540690779685974
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3446.65 seconds. Best epoch: 50
+mean loss:0.08176681861281394, best acc:0.051995523273944855
+mean val loss:0.08103251159191131, best val acc:0.0561242513358593
+
+
+Testing clr0.001 and plr0.01
+
+Training chord model...
+Trained chord model for 50 epochs in 212.57 seconds. Best epoch: 7
+mean loss:2.2017731213569642, best acc:0.4864097833633423
+mean val loss:3.028452572822571, best val acc:0.32146045565605164
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3389.51 seconds. Best epoch: 30
+mean loss:0.07765421912074089, best acc:0.055086780339479446
+mean val loss:0.07799479320645332, best val acc:0.07117164134979248
+
+
+Testing clr0.001 and plr0.001
+
+Training chord model...
+Trained chord model for 50 epochs in 208.88 seconds. Best epoch: 7
+mean loss:2.2039148378372193, best acc:0.4863852858543396
+mean val loss:3.045209484100342, best val acc:0.31703680753707886
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3426.06 seconds. Best epoch: 34
+mean loss:0.0692365925014019, best acc:0.08817257732152939
+mean val loss:0.07334361582994461, best val acc:0.07571997493505478
+
+
+Testing clr0.001 and plr0.0001
+
+Training chord model...
+Trained chord model for 50 epochs in 211.47 seconds. Best epoch: 8
+mean loss:2.202531123161316, best acc:0.4852878749370575
+mean val loss:3.0342520332336425, best val acc:0.3190869390964508
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3439.73 seconds. Best epoch: 47
+mean loss:0.07519578874111175, best acc:0.0698014572262764
+mean val loss:0.07594987377524376, best val acc:0.07190851122140884
+
+
+Testing clr0.001 and plr1e-05
+
+Training chord model...
+Trained chord model for 50 epochs in 216.32 seconds. Best epoch: 8
+mean loss:2.1998942255973817, best acc:0.48528867959976196
+mean val loss:3.033375287055969, best val acc:0.3219034671783447
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3459.09 seconds. Best epoch: 50
+mean loss:0.08202127605676651, best acc:0.050241731107234955
+mean val loss:0.0812636747956276, best val acc:0.057297054678201675
+
+
+Testing clr0.0001 and plr0.01
+
+Training chord model...
+Trained chord model for 50 epochs in 224.47 seconds. Best epoch: 50
+mean loss:2.7658108997344972, best acc:0.36446601152420044
+mean val loss:2.8718417835235597, best val acc:0.3147473931312561
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3415.52 seconds. Best epoch: 35
+mean loss:0.07158496960997582, best acc:0.08214122802019119
+mean val loss:0.07442841216921807, best val acc:0.07292326539754868
+
+
+Testing clr0.0001 and plr0.001
+
+Training chord model...
+Trained chord model for 50 epochs in 226.21 seconds. Best epoch: 50
+mean loss:2.7662675046920775, best acc:0.3635564148426056
+mean val loss:2.868270516395569, best val acc:0.3155946135520935
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3443.89 seconds. Best epoch: 37
+mean loss:0.0690312422811985, best acc:0.08901472389698029
+mean val loss:0.0732540701329708, best val acc:0.07534991949796677
+
+
+Testing clr0.0001 and plr0.0001
+
+Training chord model...
+Trained chord model for 50 epochs in 222.85 seconds. Best epoch: 50
+mean loss:2.7594448709487915, best acc:0.36421942710876465
+mean val loss:2.858831386566162, best val acc:0.31635773181915283
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3437.98 seconds. Best epoch: 32
+mean loss:0.0752720957994461, best acc:0.07015527039766312
+mean val loss:0.07599060758948326, best val acc:0.06919325143098831
+
+
+Testing clr0.0001 and plr1e-05
+
+Training chord model...
+Trained chord model for 50 epochs in 228.42 seconds. Best epoch: 50
+mean loss:2.766601228713989, best acc:0.36390507221221924
+mean val loss:2.8679352474212645, best val acc:0.3151612877845764
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3459.97 seconds. Best epoch: 48
+mean loss:0.08186842590570449, best acc:0.05129336193203926
+mean val loss:0.08107862174510956, best val acc:0.05664951726794243
+
+
+Testing clr1e-05 and plr0.01
+
+Training chord model...
+Trained chord model for 50 epochs in 223.83 seconds. Best epoch: 50
+mean loss:3.2228281354904174, best acc:0.25377967953681946
+mean val loss:3.2411628437042235, best val acc:0.24817298352718353
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3395.89 seconds. Best epoch: 32
+mean loss:0.07601649194955826, best acc:0.07981351763010025
+mean val loss:0.078368169516325, best val acc:0.07758255302906036
+
+
+Testing clr1e-05 and plr0.001
+
+Training chord model...
+Trained chord model for 50 epochs in 224.34 seconds. Best epoch: 50
+mean loss:3.225923705101013, best acc:0.25636234879493713
+mean val loss:3.2455491638183593, best val acc:0.24958285689353943
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3435.14 seconds. Best epoch: 24
+mean loss:0.06944249480962754, best acc:0.08863606303930283
+mean val loss:0.0735845747590065, best val acc:0.06923326849937439
+
+
+Testing clr1e-05 and plr0.0001
+
+Training chord model...
+Trained chord model for 50 epochs in 224.88 seconds. Best epoch: 50
+mean loss:3.2336040496826173, best acc:0.25585857033729553
+mean val loss:3.25142053604126, best val acc:0.24894259870052338
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3455.77 seconds. Best epoch: 41
+mean loss:0.0752317687869072, best acc:0.06906638294458389
+mean val loss:0.07597129508852958, best val acc:0.07448916137218475
+
+
+Testing clr1e-05 and plr1e-05
+
+Training chord model...
+Trained chord model for 50 epochs in 217.54 seconds. Best epoch: 50
+mean loss:3.2262700033187866, best acc:0.2546566426753998
+mean val loss:3.245549788475037, best val acc:0.24820855259895325
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3439.88 seconds. Best epoch: 50
+mean loss:0.08178706586360932, best acc:0.051603641360998154
+mean val loss:0.0810896860063076, best val acc:0.04817856475710869
+
+Best clr:1e-05, best plr:0.01
+
+
+Testing cepochs10 and pepochs10
+
+Training chord model...
+Trained chord model for 10 epochs in 43.50 seconds. Best epoch: 10
+mean loss:3.530336380004883, best acc:0.2120724618434906
+mean val loss:3.510357928276062, best val acc:0.2082923799753189
+
+
+Training polyphonic model...
+Trained polyphonic model for 10 epochs in 682.61 seconds. Best epoch: 8
+mean loss:0.08696356937289237, best acc:0.030188366770744324
+mean val loss:0.08576371520757675, best val acc:0.052764892578125
+
+
+Testing cepochs10 and pepochs20
+
+Training chord model...
+Trained chord model for 10 epochs in 44.88 seconds. Best epoch: 10
+mean loss:3.5329175710678102, best acc:0.2122594565153122
+mean val loss:3.511511707305908, best val acc:0.20862220227718353
+
+
+Training polyphonic model...
+Trained polyphonic model for 20 epochs in 1339.72 seconds. Best epoch: 1
+mean loss:0.09686866924166679, best acc:0.014435682445764542
+mean val loss:0.0962535735219717, best val acc:0.02859840728342533
+
+
+Testing cepochs10 and pepochs50
+
+Training chord model...
+Trained chord model for 10 epochs in 44.72 seconds. Best epoch: 10
+mean loss:3.5325514316558837, best acc:0.2122218906879425
+mean val loss:3.5109015226364138, best val acc:0.2093530148267746
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3420.23 seconds. Best epoch: 18
+mean loss:0.07301226481795312, best acc:0.07753659039735794
+mean val loss:0.07477795019745827, best val acc:0.06803419440984726
+
+
+Testing cepochs10 and pepochs100
+
+Training chord model...
+Trained chord model for 10 epochs in 46.04 seconds. Best epoch: 10
+mean loss:3.5319490671157836, best acc:0.2123998999595642
+mean val loss:3.5103937864303587, best val acc:0.21031340956687927
+
+
+Training polyphonic model...
+Trained polyphonic model for 100 epochs in 6826.20 seconds. Best epoch: 20
+mean loss:0.07448969535529613, best acc:0.0804079994559288
+mean val loss:0.07612722933292389, best val acc:0.0834643617272377
+
+
+Testing cepochs10 and pepochs200
+
+Training chord model...
+Trained chord model for 10 epochs in 45.59 seconds. Best epoch: 10
+mean loss:3.5230816125869753, best acc:0.2127232402563095
+mean val loss:3.5012287139892577, best val acc:0.20930451154708862
+
+
+Training polyphonic model...
+Trained polyphonic model for 200 epochs in 13453.57 seconds. Best epoch: 1
+mean loss:0.09415425911545754, best acc:0.014509475789964199
+mean val loss:0.09485173590481281, best val acc:0.030119232833385468
+
+
+Testing cepochs20 and pepochs10
+
+Training chord model...
+Trained chord model for 20 epochs in 91.34 seconds. Best epoch: 20
+mean loss:3.40179363489151, best acc:0.22398309409618378
+mean val loss:3.4002522230148315, best val acc:0.21975566446781158
+
+
+Training polyphonic model...
+Trained polyphonic model for 10 epochs in 692.77 seconds. Best epoch: 6
+mean loss:0.07280726060271263, best acc:0.06936191022396088
+mean val loss:0.07315898016095161, best val acc:0.06481246650218964
+
+
+Testing cepochs20 and pepochs20
+
+Training chord model...
+Trained chord model for 20 epochs in 92.85 seconds. Best epoch: 20
+mean loss:3.3965357542037964, best acc:0.22959424555301666
+mean val loss:3.395224225521088, best val acc:0.2253563553094864
+
+
+Training polyphonic model...
+Trained polyphonic model for 20 epochs in 1388.91 seconds. Best epoch: 20
+mean loss:0.07156558372080327, best acc:0.07240535318851471
+mean val loss:0.07293030247092247, best val acc:0.07670967280864716
+
+
+Testing cepochs20 and pepochs50
+
+Training chord model...
+Trained chord model for 20 epochs in 93.77 seconds. Best epoch: 20
+mean loss:3.39259649515152, best acc:0.229131281375885
+mean val loss:3.391359257698059, best val acc:0.224609375
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3424.52 seconds. Best epoch: 6
+mean loss:0.07217801406979561, best acc:0.08021188527345657
+mean val loss:0.07436418756842614, best val acc:0.07598937302827835
+
+
+Testing cepochs20 and pepochs100
+
+Training chord model...
+Trained chord model for 20 epochs in 95.03 seconds. Best epoch: 20
+mean loss:3.401546394824982, best acc:0.22560226917266846
+mean val loss:3.4003155708312987, best val acc:0.22133368253707886
+
+
+Training polyphonic model...
+Trained polyphonic model for 100 epochs in 6819.01 seconds. Best epoch: 7
+mean loss:0.07496739603579045, best acc:0.08196082711219788
+mean val loss:0.07652267031371593, best val acc:0.07616782933473587
+
+
+Testing cepochs20 and pepochs200
+
+Training chord model...
+Trained chord model for 20 epochs in 93.76 seconds. Best epoch: 20
+mean loss:3.3981369018554686, best acc:0.22730961441993713
+mean val loss:3.3982216000556944, best val acc:0.2217443585395813
+
+
+Training polyphonic model...
+Trained polyphonic model for 200 epochs in 13566.41 seconds. Best epoch: 3
+mean loss:0.07521532699465752, best acc:0.07983847707509995
+mean val loss:0.07681298680603504, best val acc:0.07736529409885406
+
+
+Testing cepochs50 and pepochs10
+
+Training chord model...
+Trained chord model for 50 epochs in 229.67 seconds. Best epoch: 50
+mean loss:3.2314678716659544, best acc:0.2563942074775696
+mean val loss:3.2494471740722655, best val acc:0.2493274062871933
+
+
+Training polyphonic model...
+Trained polyphonic model for 10 epochs in 674.98 seconds. Best epoch: 6
+mean loss:0.09738861322402954, best acc:0.014151276089251041
+mean val loss:0.09683358147740365, best val acc:0.02859840728342533
+
+
+Testing cepochs50 and pepochs20
+
+Training chord model...
+Trained chord model for 50 epochs in 229.80 seconds. Best epoch: 50
+mean loss:3.2289171409606934, best acc:0.25425735116004944
+mean val loss:3.249030590057373, best val acc:0.24691833555698395
+
+
+Training polyphonic model...
+Trained polyphonic model for 20 epochs in 1385.28 seconds. Best epoch: 18
+mean loss:0.07170757129788399, best acc:0.07190895825624466
+mean val loss:0.07289435267448426, best val acc:0.0774877667427063
+
+
+Testing cepochs50 and pepochs50
+
+Training chord model...
+Trained chord model for 50 epochs in 232.27 seconds. Best epoch: 50
+mean loss:3.2270583438873293, best acc:0.25437983870506287
+mean val loss:3.2464450645446776, best val acc:0.24821501970291138
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3434.11 seconds. Best epoch: 40
+mean loss:0.07109167829155921, best acc:0.07720467448234558
+mean val loss:0.07358002156019211, best val acc:0.07245297729969025
+
+
+Testing cepochs50 and pepochs100
+
+Training chord model...
+Trained chord model for 50 epochs in 228.52 seconds. Best epoch: 50
+mean loss:3.231019549369812, best acc:0.25381726026535034
+mean val loss:3.2495666408538817, best val acc:0.24771703779697418
+
+
+Training polyphonic model...
+Trained polyphonic model for 100 epochs in 6778.32 seconds. Best epoch: 33
+mean loss:0.07644060991704464, best acc:0.07868753373622894
+mean val loss:0.07805314660072327, best val acc:0.07148288190364838
+
+
+Testing cepochs50 and pepochs200
+
+Training chord model...
+Trained chord model for 50 epochs in 238.26 seconds. Best epoch: 50
+mean loss:3.228911290168762, best acc:0.25781577825546265
+mean val loss:3.2479747676849366, best val acc:0.251752644777298
+
+
+Training polyphonic model...
+Trained polyphonic model for 200 epochs in 13562.97 seconds. Best epoch: 47
+mean loss:0.07530252698808909, best acc:0.07708556205034256
+mean val loss:0.07710692171007395, best val acc:0.07851304113864899
+
+
+Testing cepochs100 and pepochs10
+
+Training chord model...
+Trained chord model for 100 epochs in 455.97 seconds. Best epoch: 100
+mean loss:3.092790229320526, best acc:0.2779969573020935
+mean val loss:3.1260433053970336, best val acc:0.26822808384895325
+
+
+Training polyphonic model...
+Trained polyphonic model for 10 epochs in 673.86 seconds. Best epoch: 1
+mean loss:0.09494205638766288, best acc:0.015099567361176014
+mean val loss:0.09449468404054642, best val acc:0.009411539882421494
+
+
+Testing cepochs100 and pepochs20
+
+Training chord model...
+Trained chord model for 100 epochs in 468.21 seconds. Best epoch: 100
+mean loss:3.0935734724998474, best acc:0.27902495861053467
+mean val loss:3.1249299597740174, best val acc:0.2696153223514557
+
+
+Training polyphonic model...
+Trained polyphonic model for 20 epochs in 1369.50 seconds. Best epoch: 9
+mean loss:0.0761222556233406, best acc:0.06244412064552307
+mean val loss:0.07589369267225266, best val acc:0.061368826776742935
+
+
+Testing cepochs100 and pepochs50
+
+Training chord model...
+Trained chord model for 100 epochs in 456.95 seconds. Best epoch: 100
+mean loss:3.096750283241272, best acc:0.27772507071495056
+mean val loss:3.129194574356079, best val acc:0.2682507336139679
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3435.51 seconds. Best epoch: 34
+mean loss:0.07141416072845459, best acc:0.07727484405040741
+mean val loss:0.07355770424008369, best val acc:0.0703418031334877
+
+
+Testing cepochs100 and pepochs100
+
+Training chord model...
+Trained chord model for 100 epochs in 469.20 seconds. Best epoch: 100
+mean loss:3.102293493747711, best acc:0.2792642116546631
+mean val loss:3.1375136804580688, best val acc:0.26933398842811584
+
+
+Training polyphonic model...
+Trained polyphonic model for 100 epochs in 6712.57 seconds. Best epoch: 13
+mean loss:0.09455461129546165, best acc:0.014275796711444855
+mean val loss:0.09416955053806304, best val acc:0.02859840728342533
+
+
+Testing cepochs100 and pepochs200
+
+Training chord model...
+Trained chord model for 100 epochs in 457.27 seconds. Best epoch: 100
+mean loss:3.1050617551803588, best acc:0.27827948331832886
+mean val loss:3.138660707473755, best val acc:0.2680922746658325
+
+
+Training polyphonic model...
+Trained polyphonic model for 200 epochs in 13460.12 seconds. Best epoch: 15
+mean loss:0.0937840649113059, best acc:0.014981375075876713
+mean val loss:0.09418776981532574, best val acc:0.030119232833385468
+
+
+Testing cepochs200 and pepochs10
+
+Training chord model...
+Trained chord model for 200 epochs in 903.37 seconds. Best epoch: 200
+mean loss:2.9515833616256715, best acc:0.30876603722572327
+mean val loss:3.005446802377701, best val acc:0.2916332483291626
+
+
+Training polyphonic model...
+Trained polyphonic model for 10 epochs in 654.80 seconds. Best epoch: 4
+mean loss:0.10278436094522476, best acc:0.014883238822221756
+mean val loss:0.1032562643289566, best val acc:0.030450480058789253
+
+
+Testing cepochs200 and pepochs20
+
+Training chord model...
+Trained chord model for 200 epochs in 927.03 seconds. Best epoch: 200
+mean loss:2.9618452060222626, best acc:0.30755022168159485
+mean val loss:3.0131301844120024, best val acc:0.28992587327957153
+
+
+Training polyphonic model...
+Trained polyphonic model for 20 epochs in 1326.96 seconds. Best epoch: 8
+mean loss:0.10578359477221966, best acc:0.012707407586276531
+mean val loss:0.10697252266108989, best val acc:0.021766511723399162
+
+
+Testing cepochs200 and pepochs50
+
+Training chord model...
+Trained chord model for 200 epochs in 930.43 seconds. Best epoch: 199
+mean loss:2.960709580183029, best acc:0.3065181374549866
+mean val loss:3.012674570083618, best val acc:0.2892726957798004
+
+
+Training polyphonic model...
+Trained polyphonic model for 50 epochs in 3435.67 seconds. Best epoch: 18
+mean loss:0.07232484012842179, best acc:0.08086846768856049
+mean val loss:0.07510841727256774, best val acc:0.07070397585630417
+
+
+Testing cepochs200 and pepochs100
+
+Training chord model...
+Trained chord model for 200 epochs in 890.02 seconds. Best epoch: 200
+mean loss:2.957633173465729, best acc:0.3074677586555481
+mean val loss:3.011278300285339, best val acc:0.2903430163860321
+
+
+Training polyphonic model...
+Trained polyphonic model for 100 epochs in 6761.08 seconds. Best epoch: 3
+mean loss:0.0780952325463295, best acc:0.07875637710094452
+mean val loss:0.07998123466968536, best val acc:0.07773292064666748
+
+
+Testing cepochs200 and pepochs200
+
+Training chord model...
+Trained chord model for 200 epochs in 911.85 seconds. Best epoch: 200
+mean loss:2.9545523393154145, best acc:0.30730199813842773
+mean val loss:3.007836238145828, best val acc:0.2898450493812561
+
+
+Training polyphonic model...
+Trained polyphonic model for 200 epochs in 13248.65 seconds. Best epoch: 17
+mean loss:0.10308314856141805, best acc:0.012920520268380642
+mean val loss:0.10253255378454923, best val acc:0.030119232833385468
+
+
+SUMMARY:
+Best chord lstm size: 512
+Best chord learning rate: 1e-05
+Best chord num epochs: 10
+Best poly lstm size: 1024
+Best poly learning rate: 0.01
+Best poly num epochs: 100

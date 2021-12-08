@@ -124,7 +124,7 @@ void MainComponent::addMessageToList(const juce::MidiMessage& message, const juc
     auto hours   = ((int) (time / 3600.0)) % 24;
     auto minutes = ((int) (time / 60.0  )) % 60;
     auto seconds = ((int) (time         )) % 60;
-    auto millis  = ((int) (time / 1000.0)) % 1000;
+    auto millis  = ((int) (time * 1000.0)) % 1000;
 
     auto timecode = juce::String::formatted("%02d:%02d:%02d.%03d",
                                             hours,

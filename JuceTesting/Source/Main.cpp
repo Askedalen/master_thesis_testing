@@ -10,7 +10,8 @@
 #include "MainComponent.h"
 
 //==============================================================================
-class JuceTestingApplication  : public juce::JUCEApplication
+class JuceTestingApplication  : public juce::JUCEApplication,
+                                private AsyncUpdater
 {
 public:
     //==============================================================================
