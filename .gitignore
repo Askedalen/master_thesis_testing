@@ -9,7 +9,6 @@ chord_generator_test/results/tests/
 *.tar.gz
 *.zip
 *.h5
-*.hdf5
 *.pdf
 *.npy
 *.pb
