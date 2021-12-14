@@ -100,7 +100,7 @@ class FullModel:
         self.chord_model = Model(inputs=[chord_input, melody_input], outputs=activation)
 
         self.chord_model.compile(optimizer, loss, metrics=['accuracy'])
-        #self.chord_model.summary()
+        self.chord_model.summary()
 
     def _create_poly_model(self):
         lstm_size = self.poly_config['lstm_size']
@@ -369,44 +369,29 @@ if __name__ == "__main__":
     poly_val_steps = len(poly_val_data)
     poly_val_data = yield_data(poly_val_data)
 
-    combos = [[0.000001, 0.01], [0.001, 0.001], [0.0005, 0.01], [0.00005, 0.01], [0.01, 0.001], [0.0001, 0.0005], [0.0001, 0.01], [0.0001, 0.001], [0.000005, 0.001]]
-    best_lr_val_acc = 0
-
-    for clr, plr in combos:
-        print()
-        print(f'Testing clr{clr} and plr{plr}')
-        chord_config.update({'lstm_size':512,
-                            'learning_rate':clr,
-                            'embedding_size':10,
-                            'epochs':100,
-                            'verbose':0})
-
-        poly_config.update({'lstm_size':1024,
-                            'learning_rate':plr,
-                            'embedding_size':10,
-                            'epochs':100,
-                            'verbose':0})
-        
-        model = FullModel(chord_config, poly_config)
-
-        print()
-        print('Training chord model...')
-        model.train_chord_model(chord_training_data, chord_training_steps, chord_val_data, chord_val_steps)
-        print()
-        print('Training polyphonic model...')
-        model.train_poly_model(poly_training_data, poly_training_steps, poly_val_data, poly_val_steps)
-        model.plot_history()
-        model.save_models()
-        val_acc = model.get_best_val_acc()
-        if val_acc > best_lr_val_acc:
-            best_clr = clr
-            best_plr = plr
-            best_lr_val_acc = val_acc
-
-    print(f'Best clr:{best_clr}, best plr:{best_plr}')
+    best_clr = 0.00001
+    best_plr = 0.01
     print()
+    chord_config.update({'lstm_size':512,
+                        'learning_rate':best_clr,
+                        'embedding_size':10,
+                        'epochs':100,
+                        'verbose':0})
+
+    poly_config.update({'lstm_size':1024,
+                        'learning_rate':best_plr,
+                        'embedding_size':10,
+                        'epochs':100,
+                        'verbose':0})
+    
+    model = FullModel(chord_config, poly_config)
 
     print()
-    print('SUMMARY:')
-    print(f'Best chord learning rate: {best_clr}')
-    print(f'Best poly learning rate: {best_plr}')
+    print('Training chord model...')
+    model.train_chord_model(chord_training_data, chord_training_steps, chord_val_data, chord_val_steps)
+    print()
+    print('Training polyphonic model...')
+    model.train_poly_model(poly_training_data, poly_training_steps, poly_val_data, poly_val_steps)
+    model.plot_history()
+    model.save_models()
+    print('Done training and saving models')

@@ -23,13 +23,13 @@ poly_best_epoch = 99
 chord_model_filename = os.path.join(conf.chord_model_dir, f'epoch{chord_best_epoch:03d}.hdf5')
 poly_model_filename = os.path.join(conf.poly_model_dir, f'epoch{poly_best_epoch:03d}.hdf5')
 
-melody_filenames = pickle.load(open('val_filenames.pickle', 'rb'))
+#melody_filenames = pickle.load(open('val_filenames.pickle', 'rb'))
 
-chord_model = load_model(chord_model_filename)
-poly_model = load_model(poly_model_filename)
+chord_model = load_model('JuceTesting/chord.pb')
+poly_model = load_model('JuceTesting/poly.pb')
 
 for i in range(number_of_melodies):
-    random_song = os.path.join(conf.melody_dir, melody_filenames[i])#melody_filenames[np.random.randint(0, len(melody_filenames))]
+    random_song = os.path.join(conf.melody_dir, '747b4303b01de17f9c295213d6fb1117.pickle')#melody_filenames[np.random.randint(0, len(melody_filenames))]
     if not os.path.exists(random_song):
         print('not exist')
         continue
@@ -47,8 +47,12 @@ for i in range(number_of_melodies):
     chord_output[0] = 92
 
     for j in range(math.floor(num_steps/chord_interval)):
-        x_chords = chord_output[0:j+1]
-        x_melody = melody[melody_start:melody_start+j+1, :, :]
+        x_chords = np.zeros((1, math.floor(num_steps/chord_interval)), dtype='float32')
+        x_chords[0,0:j+1] = chord_output[0:j+1]
+
+        x_melody = np.zeros((1, math.floor(num_steps/chord_interval), chord_interval, conf.num_notes), dtype='float32')
+        x_melody[0,0:j+1,:,:] = melody[melody_start:melody_start+j+1, :, :]
+        x_melody = np.float32(x_melody)
         
         prediction = chord_model.predict([x_chords, x_melody])
         next_chord = np.random.choice(len(prediction[j][0]), p=prediction[j][0])
