@@ -25,8 +25,11 @@ poly_model_filename = os.path.join(conf.poly_model_dir, f'epoch{poly_best_epoch:
 
 #melody_filenames = pickle.load(open('val_filenames.pickle', 'rb'))
 
-chord_model = load_model('JuceTesting/chord.pb')
-poly_model = load_model('JuceTesting/poly.pb')
+chord_model = load_model('JuceTesting/chord_model.pb')
+chord_model.load_weights('JuceTesting/chord_weights.pb')
+
+poly_model = load_model('JuceTesting/poly_model.pb')
+poly_model.load_weights('JuceTesting/poly_weights.pb')
 
 for i in range(number_of_melodies):
     random_song = os.path.join(conf.melody_dir, '747b4303b01de17f9c295213d6fb1117.pickle')#melody_filenames[np.random.randint(0, len(melody_filenames))]

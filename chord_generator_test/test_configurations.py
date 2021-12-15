@@ -296,10 +296,19 @@ class FullModel:
 
     def save_models(self):
         os.mkdir(os.path.join(self.test_dir, 'models'))
-        self.chord_model.save(os.path.join(self.test_dir, 'models', 'chord_last.hdf5'))
-        self.best_chord_model.save(os.path.join(self.test_dir, 'models', 'chord_best.hdf5'))
-        self.poly_model.save(os.path.join(self.test_dir, 'models', 'poly_last.hdf5'))
-        self.best_poly_model.save(os.path.join(self.test_dir, 'models', 'poly_best.hdf5'))
+        #self.chord_model.save(os.path.join(self.test_dir, 'models', 'chord_last.hdf5'))
+        self.best_chord_model.save_weights(os.path.join(self.test_dir, 'models', 'chord_weights.pb'), save_format='tf')
+        #self.poly_model.save(os.path.join(self.test_dir, 'models', 'poly_last.hdf5'))
+        self.best_poly_model.save_weights(os.path.join(self.test_dir, 'models', 'poly_weights.pb'), save_format='tf')
+        
+        self.chord_config['batch_size'] = 1
+        self.poly_coonfig['batch_size'] = 1
+        self._create_chord_model()
+        self._create_poly_model()
+
+        self.chord_model.save(os.path.join(self.test_dir, 'models', 'chord_model.pb'), save_format='tf')
+        self.poly_model.save(os.path.join(self.test_dir, 'models', 'poly_model.pb'), save_format='tf')
+
         config_file = open(os.path.join(self.test_dir, "configs.txt"), "w")
         config_file.write('Chord config:\r\n')
         config_file.write(str(self.chord_config))
@@ -369,17 +378,14 @@ if __name__ == "__main__":
     poly_val_steps = len(poly_val_data)
     poly_val_data = yield_data(poly_val_data)
 
-    best_clr = 0.00001
-    best_plr = 0.01
-    print()
     chord_config.update({'lstm_size':512,
-                        'learning_rate':best_clr,
+                        'learning_rate':0.00001,
                         'embedding_size':10,
                         'epochs':100,
                         'verbose':0})
 
     poly_config.update({'lstm_size':1024,
-                        'learning_rate':best_plr,
+                        'learning_rate':0.01,
                         'embedding_size':10,
                         'epochs':100,
                         'verbose':0})
