@@ -2,6 +2,7 @@ import pyo
 from random import random
 import numpy as np
 import config as conf
+from MusicGenerator import MusicGenerator
 
 class Synth:
     def __init__(self, transpo=1, mul=1, num_channels=10):
@@ -32,9 +33,11 @@ class Synth:
         self.current_noteoffs = np.zeros(conf.num_notes)
 
         self.tempo = conf.tempo
-        self.beat_length = 1 #60/self.tempo/conf.subdivision
+        self.beat_length = 60/self.tempo/conf.subdivision
        
         self.pat = pyo.Pattern(self._timestep, self.beat_length)
+
+        self.generator = MusicGenerator()
 
     def out(self):
         "Sends the synth's signal to the audio output and return the object itself."
@@ -83,8 +86,9 @@ class Synth:
                     self.current_noteoffs[i] = 0
             
         timestep = self.current_noteons
-        # TODO: Call ML-model with current and previous timestep and recieve MIDI to play
-        
+        # TODO: Call ML-model with current and previous timesteps and recieve MIDI to play
+        next_step = self.generator.step(timestep)
+
 if __name__ == "__main__":
     s = pyo.Server()
     s.setMidiInputDevice(99)  # Open all input devices.
