@@ -10,11 +10,10 @@ import pretty_midi
 import data_preparation
 import _pickle as pickle
 
-np.random.seed(2021)
 
 num_steps = 128
 chord_interval = 16
-number_of_melodies = 100
+number_of_melodies = 10
 threshold = 0.25
 
 chord_best_epoch = 100
@@ -23,16 +22,16 @@ poly_best_epoch = 99
 chord_model_filename = os.path.join(conf.chord_model_dir, f'epoch{chord_best_epoch:03d}.hdf5')
 poly_model_filename = os.path.join(conf.poly_model_dir, f'epoch{poly_best_epoch:03d}.hdf5')
 
-#melody_filenames = pickle.load(open('val_filenames.pickle', 'rb'))
+melody_filenames = load.list_pickle_files('melodies')#pickle.load(open('val_filenames.pickle', 'rb'))
 
-chord_model = load_model('JuceTesting/chord_model.pb')
-chord_model.load_weights('JuceTesting/chord_weights.pb')
+chord_model = load_model('pyo_testing/models/chord_model.pb')
+chord_model.load_weights('pyo_testing/models/chord_weights.pb')
 
-poly_model = load_model('JuceTesting/poly_model.pb')
-poly_model.load_weights('JuceTesting/poly_weights.pb')
+poly_model = load_model('pyo_testing/models/poly_model.pb')
+poly_model.load_weights('pyo_testing/models/poly_weights.pb')
 
 for i in range(number_of_melodies):
-    random_song = os.path.join(conf.melody_dir, '747b4303b01de17f9c295213d6fb1117.pickle')#melody_filenames[np.random.randint(0, len(melody_filenames))]
+    random_song = melody_filenames[np.random.randint(0, len(melody_filenames))]
     if not os.path.exists(random_song):
         print('not exist')
         continue
@@ -57,15 +56,13 @@ for i in range(number_of_melodies):
         x_melody[0,0:j+1,:,:] = melody[melody_start:melody_start+j+1, :, :]
         x_melody = np.float32(x_melody)
         
-        prediction = chord_model.predict([x_chords, x_melody])
-        next_chord = np.random.choice(len(prediction[j][0]), p=prediction[j][0])
+        prediction = chord_model.predict([x_chords, x_melody])[0]
+        next_chord = np.random.choice(len(prediction[j]), p=prediction[j])
         chord_output[j+1] = next_chord
 
     model_output = np.zeros((num_steps, (conf.num_notes*3)+24))
     melody_expanded = np.reshape(melody, (-1, conf.num_notes))
-    chord_embedding = load.ChordEmbedding(chord_model_filename)
-    embedded_chords = chord_embedding.embed_chords_song(chord_output)
-    embedded_chords_expanded = np.repeat(embedded_chords, chord_interval, axis=0)
+    chords_expanded = np.repeat(chord_output, chord_interval, axis=0)
     counter = to_categorical(np.tile(range(chord_interval), math.floor(num_steps/chord_interval)), num_classes=chord_interval)
     
     for j in range(num_steps):
@@ -73,13 +70,13 @@ for i in range(number_of_melodies):
         x_melody = np.zeros((1, num_steps, conf.num_notes))
         x_counter = np.zeros((1, num_steps, chord_interval))
 
-        x_chords[0,:j+1] = embedded_chords_expanded[0:j+1]
+        x_chords[0,:j+1] = chords_expanded[0:j+1]
         x_melody[0,:j+1] = melody_expanded[melody_start*chord_interval:(melody_start*chord_interval)+j+1, :]
         x_counter[0,:j+1] = counter[0:j+1]
 
-        x = np.concatenate((x_chords, x_melody, x_counter), axis=2)
+        x = np.concatenate((x_melody, x_counter), axis=2)
 
-        prediction = poly_model.predict(x)[0]
+        prediction = poly_model.predict([x_chords, x])
         next_step = prediction[j]
 
         model_output[j,:] = next_step[:]

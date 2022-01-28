@@ -100,7 +100,7 @@ class FullModel:
         self.chord_model = Model(inputs=[chord_input, melody_input], outputs=activation)
 
         self.chord_model.compile(optimizer, loss, metrics=['accuracy'])
-        self.chord_model.summary()
+        #self.chord_model.summary()
 
     def _create_poly_model(self):
         lstm_size = self.poly_config['lstm_size']
@@ -117,8 +117,11 @@ class FullModel:
         activation_function = 'sigmoid'
         loss = 'binary_crossentropy'
 
-        embedding_weights = self.best_chord_model.layers[2].get_weights()[0]
-        
+        try:
+            embedding_weights = self.best_chord_model.layers[2].get_weights()[0]
+        except AttributeError:
+            embedding_weights = 0
+
         #Create chord embedding
         chord_input = Input(
             shape=(max_steps, 1), 
@@ -301,13 +304,7 @@ class FullModel:
         #self.poly_model.save(os.path.join(self.test_dir, 'models', 'poly_last.hdf5'))
         self.best_poly_model.save_weights(os.path.join(self.test_dir, 'models', 'poly_weights.pb'), save_format='tf')
         
-        self.chord_config['batch_size'] = 1
-        self.poly_coonfig['batch_size'] = 1
-        self._create_chord_model()
-        self._create_poly_model()
-
-        self.chord_model.save(os.path.join(self.test_dir, 'models', 'chord_model.pb'), save_format='tf')
-        self.poly_model.save(os.path.join(self.test_dir, 'models', 'poly_model.pb'), save_format='tf')
+        self.create_empty_models()
 
         config_file = open(os.path.join(self.test_dir, "configs.txt"), "w")
         config_file.write('Chord config:\r\n')
@@ -315,6 +312,19 @@ class FullModel:
         config_file.write('\r\nPoly config:\r\n')
         config_file.write(str(self.poly_config))
         config_file.close()
+
+    def create_empty_models(self, output_dir=None):
+        self.chord_config['batch_size'] = 1
+        self.poly_config['batch_size'] = 1
+        self._create_chord_model()
+        self._create_poly_model()
+
+        if output_dir is None:
+            output_dir = self.test_dir
+
+        self.chord_model.save(os.path.join(output_dir, 'models', 'chord_model.pb'), save_format='tf')
+        self.poly_model.save(os.path.join(output_dir, 'models', 'poly_model.pb'), save_format='tf')
+
 
     def get_best_val_acc(self):
         return self.best_val_acc

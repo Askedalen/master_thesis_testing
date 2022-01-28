@@ -33,7 +33,7 @@ class Synth:
         self.current_noteoffs = np.zeros(conf.num_notes)
 
         self.tempo = conf.tempo
-        self.beat_length = 60/self.tempo/conf.subdivision
+        self.beat_length = 1#60/self.tempo/conf.subdivision
        
         self.pat = pyo.Pattern(self._timestep, self.beat_length)
 
@@ -88,6 +88,7 @@ class Synth:
         timestep = self.current_noteons
         # TODO: Call ML-model with current and previous timesteps and recieve MIDI to play
         next_step = self.generator.step(timestep)
+        print(np.where(next_step>0))
 
 if __name__ == "__main__":
     s = pyo.Server()
