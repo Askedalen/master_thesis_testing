@@ -24,11 +24,27 @@ poly_model_filename = os.path.join(conf.poly_model_dir, f'epoch{poly_best_epoch:
 
 melody_filenames = load.list_pickle_files('melodies')#pickle.load(open('val_filenames.pickle', 'rb'))
 
-chord_model = load_model('pyo_testing/models/chord_model.pb')
+""" chord_model = load_model('pyo_testing/models/chord_best.hdf5', compile=False)
+chord_model2 = load_model('pyo_testing/models/chord_best', compile=False)
+chord_model3 = load_model('pyo_testing/models/chord_model.pb', compile=False)
+chord_weights = chord_model.get_weights()
+chord2_weights = chord_model2.get_weights()
+chord3_weights = chord_model3.get_weights()
+chord_model3.set_weights(chord_weights)
+test = chord_model3.get_weights()
+chord_model3.set_weights(chord2_weights)
+test2 = chord_model3.get_weights()
+chord_model3.load_weights('pyo_testing/models/chord_weights.pb')
+test3 = chord_model3.get_weights() """
+
+""" chord_model = load_model('pyo_testing/models/chord_model.pb', compile=False)
 chord_model.load_weights('pyo_testing/models/chord_weights.pb')
 
 poly_model = load_model('pyo_testing/models/poly_model.pb')
-poly_model.load_weights('pyo_testing/models/poly_weights.pb')
+poly_model.load_weights('pyo_testing/models/poly_weights.pb') """
+
+chord_model = load_model('pyo_testing/models/chord_best.hdf5')
+poly_model = load_model('pyo_testing/models/poly_best.hdf5')
 
 for i in range(number_of_melodies):
     random_song = melody_filenames[np.random.randint(0, len(melody_filenames))]
@@ -66,18 +82,18 @@ for i in range(number_of_melodies):
     counter = to_categorical(np.tile(range(chord_interval), math.floor(num_steps/chord_interval)), num_classes=chord_interval)
     
     for j in range(num_steps):
-        x_chords = np.zeros((1, num_steps, 10))
+        x_chords = np.zeros((1, num_steps, 1))
         x_melody = np.zeros((1, num_steps, conf.num_notes))
         x_counter = np.zeros((1, num_steps, chord_interval))
 
-        x_chords[0,:j+1] = chords_expanded[0:j+1]
+        x_chords[0,:j+1,0] = chords_expanded[0:j+1]
         x_melody[0,:j+1] = melody_expanded[melody_start*chord_interval:(melody_start*chord_interval)+j+1, :]
         x_counter[0,:j+1] = counter[0:j+1]
 
         x = np.concatenate((x_melody, x_counter), axis=2)
 
         prediction = poly_model.predict([x_chords, x])
-        next_step = prediction[j]
+        next_step = prediction[0][j]
 
         model_output[j,:] = next_step[:]
 

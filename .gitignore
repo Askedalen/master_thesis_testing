@@ -19,7 +19,7 @@ chord_generator_test/JamBot-master
 *.whl
 chord_generator_test/results/chords_and_melodies
 JuceTesting/Builds
-
+pyo_testing/models/
 ._*
 *.mode1v3
 *.pbxuser

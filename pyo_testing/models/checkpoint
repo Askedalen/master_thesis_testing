@@ -1,2 +1,0 @@
-model_checkpoint_path: "poly_weights.pb"
-all_model_checkpoint_paths: "poly_weights.pb"

@@ -86,9 +86,25 @@ class Synth:
                     self.current_noteoffs[i] = 0
             
         timestep = self.current_noteons
-        # TODO: Call ML-model with current and previous timesteps and recieve MIDI to play
+        # Call ML-model with current and previous timesteps and recieve MIDI to play
         next_step = self.generator.step(timestep)
-        print(np.where(next_step>0))
+
+        next_piano = next_step[0:conf.num_notes]
+        next_guitar = next_step[conf.num_notes:conf.num_notes*2]
+        next_bass = next_step[conf.num_notes*2:conf.num_notes*3]
+        next_drums = next_step[conf.num_notes*3:]
+
+        play_piano = np.where(next_piano >= 1) + conf.pr_start_idx
+        play_guitar = np.where(next_guitar >= 1) + conf.pr_start_idx
+        play_bass = np.where(next_bass >= 1) + conf.pr_start_idx
+        play_drums = np.where(next_drums >= 1) + conf.pr_start_idx
+
+        # note object play_piano, play_guitar ...
+        # play_piano_hz = pyo.MtoF(play_piano_obj["pitch"]) * self.transpose
+        # or
+        # play_piano_hz = np lambda pyo.MtoF(piano_play) * self.transpose
+
+
 
 if __name__ == "__main__":
     s = pyo.Server()

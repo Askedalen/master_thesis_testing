@@ -5,8 +5,12 @@ random_data     = False
 
 prefix_folder = 'chord_generator_test'
 model_filenames = { 
+    'chord_hdf5':'pyo_testing/models/chord_best.hdf5',
+    'chord_pb_with_weights':'pyo_testing/models/chord_best',
     'chord_model':'pyo_testing/models/chord_model.pb', 
     'chord_weights':'pyo_testing/models/chord_weights.pb',
+    'poly_hdf5':'pyo_testing/models/poly_best.hdf5',
+    'poly_pb_with_weights':'pyo_testing/models/poly_best',
     'poly_model':'pyo_testing/models/poly_model.pb',
     'poly_weights':'pyo_testing/models/poly_weights.pb'
 }
