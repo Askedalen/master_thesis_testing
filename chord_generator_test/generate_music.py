@@ -37,14 +37,19 @@ test2 = chord_model3.get_weights()
 chord_model3.load_weights('pyo_testing/models/chord_weights.pb')
 test3 = chord_model3.get_weights() """
 
-""" chord_model = load_model('pyo_testing/models/chord_model.pb', compile=False)
+chord_model = load_model('pyo_testing/models/chord_model.pb', compile=False)
 chord_model.load_weights('pyo_testing/models/chord_weights.pb')
 
-poly_model = load_model('pyo_testing/models/poly_model.pb')
-poly_model.load_weights('pyo_testing/models/poly_weights.pb') """
+poly_model = load_model('pyo_testing/models/poly_model.pb', compile=False)
+poly_model.load_weights('pyo_testing/models/poly_weights.pb')
 
-chord_model = load_model('pyo_testing/models/chord_best.hdf5')
-poly_model = load_model('pyo_testing/models/poly_best.hdf5')
+chord_input = np.zeros((1, 8, 1))
+poly_input = np.zeros((1, 8, 16, 60))
+test_chord_model = load_model('pyo_testing/models/test_chord_model.hdf5')
+chord_pred_1 = test_chord_model.predict([chord_input, poly_input])
+chord_pred_2 = chord_model.predict([chord_input, poly_input])
+
+test_poly_model = load_model('pyo_testing/models/test_poly_model.hdf5')
 
 for i in range(number_of_melodies):
     random_song = melody_filenames[np.random.randint(0, len(melody_filenames))]

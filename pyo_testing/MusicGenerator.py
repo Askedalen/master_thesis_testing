@@ -6,10 +6,10 @@ import math
 np.random.seed(2021)
 class MusicGenerator:
     def __init__(self):
-        self.chord_model = load_model(conf.model_filenames['chord_hdf5'])
+        self.chord_model = load_model(conf.model_filenames['chord_model'])
         #self.chord_model.load_weights(conf.model_filenames['chord_weights'])
 
-        self.poly_model = load_model(conf.model_filenames['poly_hdf5'])
+        self.poly_model = load_model(conf.model_filenames['poly_model'])
         #self.poly_model.load_weights(conf.model_filenames['poly_weights'])
         
         self.melody = np.zeros((1, conf.num_steps, conf.num_notes))
@@ -66,6 +66,8 @@ class MusicGenerator:
             
             X = np.concatenate((self.melody, self.counter), axis=2)
             prediction = self.poly_model.predict([self.chords_expanded, X])
+            prediction[prediction >= conf.threshold] = 100
+            prediction[prediction < conf.threshold] = 0
             self.current_timestep += 1
             return prediction[0,-1]
 

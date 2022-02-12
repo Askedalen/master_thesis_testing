@@ -1,65 +1,35 @@
 from pyo import *
+import time
 
-s = Server()
-s.setMidiInputDevice(99)  # Open all input devices.
-s.boot()
+s = Server().boot()
+s.start()
 
-# Default arguments of the Notein object.
-# - 10 voices of polyphony, which means that this object will manage
-#   10 pitch/velocity streams simultaneously.
-# - scale=0 means that the pitch information will be MIDI numbers.
-#   Use 1 for Hertz and 2 for transposition factors.
-# - first and last arguments are the lowest and highest MIDI notes
-#   that this object will handle. This is useful to split the complete
-#   range over multiple processes.
-# - channel is the MIDI channel this object will listen to. 0 means all
-#   channels.
-# - The mul argument affects velocities, which are already normalized
-#   between 0 and 1.
-notes = Notein(poly=10, scale=0, first=0, last=127, channel=0, mul=1)
+notes = Notein()
+pit = notes["pitch"]
+pitHz = MToF(pit)
+amp = MidiAdsr(notes["velocity"])
+osc = Sine(freq=pitHz, mul=amp*0.5).mix(1).out()
 
-# User can show a keyboard widget to supply MIDI events.
-notes.keyboard()
+notesArr = [60, 62, 64, 65, 67, 69, 71, 72]
+currentNote = 0
 
-# Notein["pitch"] retrieves pitch streams.
-# Converts MIDI pitch to frequency in Hertz.
-freqs = MToF(notes["pitch"])
+def callback(a, args):
+    global currentNote
+    global s
+    s.addMidiEvent([145, 129], [notesArr[currentNote%8], notesArr[(currentNote-1)%8]], [100, 0])
+    currentNote += 1
+    print('sending event', currentNote)  
 
-# Notein["velocity"] retrieves normalized velocity streams.
-# Applies a portamento on the velocity changes.
-amps = Port(notes["velocity"], risetime=0.005, falltime=0.5, mul=0.1)
+    
+test = OscDataReceive(9900, '/test', callback)
+test2 = OscDataSend("i", 9900, '/test')
 
-# Creates two groups of oscillators (10 per channel), slightly detuned.
-sigL = RCOsc(freq=freqs, sharp=0.5, mul=amps)
-sigR = RCOsc(freq=freqs * 1.003, sharp=0.5, mul=amps)
+""" while currentNote < 16:
+    callback(None, None)
+    time.sleep(.5) """
 
-# Mixes the 10 voices per channel to a single stream and send the
-# signals to the audio output.
-outL = sigL.mix(1).out()
-outR = sigR.mix(1).out(1)
-
-# Notein["trigon"] sends a trigger when a voice receive a noteon.
-# Notein["trigoff"] sends a trigger when a voice receive a noteoff.
-
-# These functions are called when Notein receives a MIDI note event.
-def noteon(voice):
-    "Print pitch and velocity for noteon event."
-    pit = int(notes["pitch"].get(all=True)[voice])
-    vel = int(notes["velocity"].get(all=True)[voice] * 127)
-    print("Noteon: voice = %d, pitch = %d, velocity = %d" % (voice, pit, vel))
-
-
-def noteoff(voice):
-    "Print pitch and velocity for noteoff event."
-    pit = int(notes["pitch"].get(all=True)[voice])
-    vel = int(notes["velocity"].get(all=True)[voice] * 127)
-    print("Noteoff: voice = %d, pitch = %d, velocity = %d" % (voice, pit, vel))
-
-
-# TrigFunc calls a function when it receives a trigger. Because notes["trigon"]
-# contains 10 streams, there will be 10 caller, each one with its own argument,
-# taken from the list of integers given at `arg` argument.
-tfon = TrigFunc(notes["trigon"], noteon, arg=list(range(10)))
-tfoff = TrigFunc(notes["trigoff"], noteoff, arg=list(range(10)))
+def test1():
+    test2.send([1])
+pat = Pattern(test1, time=0.5).play()
 
 s.gui(locals())
