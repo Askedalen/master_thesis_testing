@@ -3,6 +3,7 @@ from random import random
 import numpy as np
 import config as conf
 from MusicGenerator import MusicGenerator
+import time
 
 class Synth:
     def __init__(self, s, transpo=1, mul=1, num_channels=10):
@@ -16,30 +17,21 @@ class Synth:
         self.pitHz = pyo.MToF(self.pit) * self.transpo
         self.amp = pyo.MidiAdsr(self.notes["velocity"], attack=0.001, decay=0.1, sustain=0.7, release=1, mul=0.1,)
 
-        self.piano_notes = pyo.Notein(scale=0, first=0, last=127, channel=2)
-        self.piano_amp = pyo.MidiAdsr(self.piano_notes["velocity"])
-        self.piano_pitch = pyo.MToF(self.piano_notes["pitch"])
-        self.piano_osc = pyo.Osc(pyo.SquareTable(), freq=self.piano_pitch, mul=self.piano_amp).mix(1)
-        self.piano_rev = pyo.STRev(self.piano_osc, revtime=1, cutoff=4000, bal=0.2).out()
-        self.piano_notes.keyboard('test')
+        self.piano_osc = pyo.RCOsc(freq=[i for i in range(10)], mul=0.1)
+        self.piano_mix = self.piano_osc.mix(1)
+        self.piano_rev = pyo.STRev(self.piano_mix, revtime=1, cutoff=4000, bal=0.2).out()
 
-        self.guitar_notes = pyo.Notein(scale=0, first=0, last=127, channel=3)
-        self.guitar_amp = pyo.MidiAdsr(self.guitar_notes["velocity"])
-        self.guitar_pitch = pyo.MToF(self.guitar_notes["pitch"])
-        self.guitar_osc = pyo.Osc(pyo.SquareTable(), freq=self.guitar_pitch, mul=self.guitar_amp).mix(1)
-        self.guitar_rev = pyo.STRev(self.guitar_osc, revtime=1, cutoff=4000, bal=0.2).out()
+        self.guitar_osc = pyo.RCOsc([i for i in range(10)], mul=0.1)
+        self.guitar_mix = self.guitar_osc.mix(1)
+        self.guitar_rev = pyo.STRev(self.guitar_mix, revtime=1, cutoff=4000, bal=0.2).out()
 
-        self.bass_notes = pyo.Notein(scale=0, first=0, last=127, channel=4)
-        self.bass_amp = pyo.MidiAdsr(self.bass_notes["velocity"])
-        self.bass_pitch = pyo.MToF(self.bass_notes["pitch"])
-        self.bass_osc = pyo.Osc(pyo.SquareTable(), freq=self.bass_pitch, mul=self.bass_amp).mix(1)
-        self.bass_rev = pyo.STRev(self.bass_osc, revtime=1, cutoff=4000, bal=0.2).out()
+        self.bass_osc = pyo.RCOsc([i for i in range(10)], mul=0.1)
+        self.bass_mix = self.bass_osc.mix(1)
+        self.bass_rev = pyo.STRev(self.bass_mix, revtime=1, cutoff=4000, bal=0.2).out()
 
-        self.drums_notes = pyo.Notein(scale=0, first=0, last=127, channel=5)
-        self.drums_amp = pyo.MidiAdsr(self.drums_notes["velocity"])
-        self.drums_pitch = pyo.MToF(self.drums_notes["pitch"])
-        self.drums_osc = pyo.Osc(pyo.SquareTable(), freq=self.drums_pitch, mul=self.drums_amp).mix(1)
-        self.drums_rev = pyo.STRev(self.drums_osc, revtime=1, cutoff=4000, bal=0.2).out()
+        self.drums_osc = pyo.RCOsc([i for i in range(10)], mul=0.1)
+        self.drums_mix = self.drums_osc.mix(1)
+        self.drums_rev = pyo.STRev(self.drums_mix, revtime=1, cutoff=4000, bal=0.2).out()
 
         # Anti-aliased stereo square waves, mixed from 10 streams to 1 stream
         # to avoid channel alternation on new notes.
@@ -60,17 +52,19 @@ class Synth:
         self.current_noteoffs = np.zeros(conf.num_notes)
 
         self.tempo = conf.tempo
-        self.beat_length = 1#60/self.tempo/conf.subdivision
+        self.beat_length = 60/self.tempo#/conf.subdivision
        
-        self.pat = pyo.Pattern(self._timestep, self.beat_length)
+        self.gen_pat = pyo.Pattern(self._timestep, self.beat_length)
+        self.play_pat = pyo.Pattern(self._timestep_play, self.beat_length)
 
         self.generator = MusicGenerator()
-        #self.testtrig = pyo.TrigFunc(self.test['trigon'], self._test, arg=list(range(10)))
+        self.num_steps = 0
 
-    def _test(self, m):
-        print(m)
+        self.piano_freqs = []
+        self.guitar_freqs = []
+        self.bass_freqs = []
+        self.drums_freqs = []
         
-
     def out(self):
         "Sends the synth's signal to the audio output and return the object itself."
         self.notch.out()
@@ -86,10 +80,13 @@ class Synth:
     def start_playing(self):
         self.tfon = pyo.TrigFunc(self.notes["trigon"], self._noteon, arg=list(range(10)))
         self.tfoff = pyo.TrigFunc(self.notes["trigoff"], self._noteoff, arg=list(range(10)))
-        #self.pat.play()
+        self.gen_pat.play()
+        time.sleep(0.01)
+        self.play_pat.play()
 
     def stop_playing(self):
-        self.pat.stop()
+        self.gen_pat.stop()
+        self.play_pat.stop()
         del self.tfon
         del self.tfoff
 
@@ -103,13 +100,47 @@ class Synth:
         if pitch >= conf.pr_start_idx and pitch <= conf.pr_end_idx:
             self.current_noteoffs[pitch - conf.pr_start_idx] = 1
 
+    def _timestep_play(self):
+        if len(self.piano_freqs) > 0:
+            self.piano_osc.setFreq(self.piano_freqs)
+            if not self.piano_osc.isPlaying():
+                self.piano_osc.play()
+            print("Playing: ", self.piano_freqs)
+        else:
+            if self.piano_osc.isPlaying():
+                self.piano_osc.stop()
+
+        if len(self.guitar_freqs) > 0:
+            self.guitar_osc.setFreq(self.guitar_freqs)
+            if not self.guitar_osc.isPlaying():
+                self.guitar_osc.play()
+        else:
+            if self.guitar_osc.isPlaying():
+                self.guitar_osc.stop()
+
+        if len(self.bass_freqs) > 0:
+            self.bass_osc.setFreq(self.bass_freqs)
+            if not self.bass_osc.isPlaying():
+                self.bass_osc.play()
+        else:
+            if self.bass_osc.isPlaying():
+                self.bass_osc.stop()
+            
+        if len(self.drums_freqs) > 0:
+            self.drums_osc.setFreq(self.drums_freqs)
+            if not self.drums_osc.isPlaying():
+                self.drums_osc.play()
+        else:
+            if self.drums_osc.isPlaying():
+                self.drums_osc.stop()
+
     def _timestep(self):
         # This method is run for each 16th note
         # Fetches the current played notes, 
         # removes the notes that have been released since the last time step
         # and calls the model to generate accompaniment for the next timestep
-
-            
+        self.num_steps += 1
+        #print('Time step', self.num_steps)
         timestep = self.current_noteons
         noteons = np.where(self.current_noteons >= 1)
         if len(noteons[0]) > 0:
@@ -119,39 +150,27 @@ class Synth:
                     self.current_noteoffs[i] = 0
         # Call ML-model with current and previous timesteps and recieve MIDI to play
         next_step = self.generator.step(timestep)
-        #next_step = np.zeros((204))
-        """ if 48 not in self.prev_step['piano']:
-            next_step[24] = 1 """
-        """ if len(self.prev_step['piano']) == 0:
-            next_step[0] = 1
-            next_step[24] = 1
-            next_step[28]= 1
-            next_step[84] = 1
-            next_step[91] = 1
-            next_step[144] = 1 """
 
         next_piano  = np.asarray(np.where(next_step[                 : conf.num_notes  ] >= 1))[0] + conf.pr_start_idx
         next_guitar = np.asarray(np.where(next_step[conf.num_notes   : conf.num_notes*2] >= 1))[0] + conf.pr_start_idx
         next_bass   = np.asarray(np.where(next_step[conf.num_notes*2 : conf.num_notes*3] >= 1))[0] + conf.pr_start_idx
         next_drums  = np.asarray(np.where(next_step[conf.num_notes*3 :                 ] >= 1))[0] + conf.pr_start_idx
 
-        messages = [[],[],[]]
+        self.piano_freqs = []
+        self.guitar_freqs = []
+        self.bass_freqs = []
+        self.drums_freqs = []
 
-        for note in next_piano:
-            if note not in self.prev_step['piano']:
-                messages[0].append(144)
-                messages[1].append(note)
-                messages[2].append(100)
-            print('noteon',messages)
-        for note in self.prev_step['piano']:
-            if note not in next_piano:
-                messages[0].append(128)
-                messages[1].append(note)
-                messages[2].append(0)
-            print('noteoff',messages)
-
-        self.server.addMidiEvent(*messages)
-        # TODO: Try using OSCListRecieve and OscSend
+        for midi_note in next_piano:
+            self.piano_freqs.append(pyo.midiToHz(midi_note))
+        for midi_note in next_guitar:
+            self.guitar_freqs.append(pyo.midiToHz(midi_note))
+        for midi_note in next_bass:
+            self.bass_freqs.append(pyo.midiToHz(midi_note))
+        for midi_note in next_drums:
+            self.drums_freqs.append(pyo.midiToHz(midi_note))
+        
+        
 
         self.prev_step = {
             'piano':next_piano,
@@ -167,8 +186,6 @@ if __name__ == "__main__":
 
     # Create the midi synth.
     a1 = Synth(s).out()
-    a1._timestep()
-    #a1._timestep()
     
     a1.keyboard()
     a1.start_playing()

@@ -1,35 +1,71 @@
+import sys, time, multiprocessing
+from random import uniform
 from pyo import *
-import time
 
-s = Server().boot()
-s.start()
+VOICES_PER_CORE = 4
 
-notes = Notein()
-pit = notes["pitch"]
-pitHz = MToF(pit)
-amp = MidiAdsr(notes["velocity"])
-osc = Sine(freq=pitHz, mul=amp*0.5).mix(1).out()
 
-notesArr = [60, 62, 64, 65, 67, 69, 71, 72]
-currentNote = 0
 
-def callback(a, args):
-    global currentNote
-    global s
-    s.addMidiEvent([145, 129], [notesArr[currentNote%8], notesArr[(currentNote-1)%8]], [100, 0])
-    currentNote += 1
-    print('sending event', currentNote)  
+class Proc(multiprocessing.Process):
+    def __init__(self, pipe):
+        super(Proc, self).__init__()
+        self.daemon = True
+        self.pipe = pipe
 
-    
-test = OscDataReceive(9900, '/test', callback)
-test2 = OscDataSend("i", 9900, '/test')
+    def run(self):
+        self.server = Server()
+        self.server.deactivateMidi()
+        self.server.boot().start()
 
-""" while currentNote < 16:
-    callback(None, None)
-    time.sleep(.5) """
+        self.mid = Notein(poly=VOICES_PER_CORE, scale=1, first=0, last=127)
+        self.amp = MidiAdsr(self.mid["velocity"], 0.005, 0.1, 0.7, 0.5, mul=0.01)
+        self.pit = self.mid["pitch"] * [uniform(0.99, 1.01) for i in range(40)]
+        self.rc1 = RCOsc(self.pit, sharp=0.8, mul=self.amp).mix(1)
+        self.rc2 = RCOsc(self.pit * 0.99, sharp=0.8, mul=self.amp).mix(1)
+        self.mix = Mix([self.rc1, self.rc2], voices=2)
+        self.rev = STRev(Denorm(self.mix), [0.1, 0.9], 2, bal=0.30).out()
 
-def test1():
-    test2.send([1])
-pat = Pattern(test1, time=0.5).play()
+        while True:
+            if self.pipe.poll():
+                data = self.pipe.recv()
+                self.server.addMidiEvent(*data)
+            time.sleep(0.001)
 
-s.gui(locals())
+        self.server.stop()
+
+
+if __name__ == "__main__":
+    main1, child1 = multiprocessing.Pipe()
+    main2, child2 = multiprocessing.Pipe()
+    main3, child3 = multiprocessing.Pipe()
+    main4, child4 = multiprocessing.Pipe()
+    mains = [main1, main2, main3, main4]
+    p1, p2, p3, p4 = Proc(child1), Proc(child2), Proc(child3), Proc(child4)
+    p1.start()
+    p2.start()
+    p3.start()
+    p4.start()
+
+    playing = {0: [], 1: [], 2: [], 3: []}
+    currentcore = 0
+
+    def callback(status, data1, data2):
+        global currentcore
+        if status == 0x80 or status == 0x90 and data2 == 0:
+            for i in range(4):
+                if data1 in playing[i]:
+                    playing[i].remove(data1)
+                    mains[i].send([status, data1, data2])
+                    break
+        elif status == 0x90:
+            for i in range(4):
+                currentcore = (currentcore + 1) % 4
+                if len(playing[currentcore]) < VOICES_PER_CORE:
+                    playing[currentcore].append(data1)
+                    mains[currentcore].send([status, data1, data2])
+                    break
+
+    s = Server()
+    s.setMidiInputDevice(99)  # Open all devices.
+    s.boot().start()
+    raw = RawMidi(callback)

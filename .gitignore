@@ -10,6 +10,8 @@ chord_generator_test/results/tests/
 *.zip
 *.h5
 *.pdf
+*.mid
+*.midi
 *.npy
 *.pb
 cheriell_test/automatic_music_accompaniment_master
