@@ -89,3 +89,10 @@ extras/Projucer/JUCECompileEngine.dylib
 
 .vscode
 /build
+chord_occurrences.png
+chord-config-data.csv
+chorma_hist.png
+full_hist.png
+pianoroll.png
+poly-config-data.csv
+scale_occurrences.png

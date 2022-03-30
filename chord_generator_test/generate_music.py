@@ -118,8 +118,8 @@ for i in range(number_of_melodies):
     melody_midi_solo = pretty_midi.PrettyMIDI()
     melody_midi_solo.instruments.append(melody_midi)
 
-    os.mkdir(os.path.join(conf.music_gen_dir, folder_name))
 
+    os.mkdir(os.path.join(conf.music_gen_dir, folder_name))
     poly_midi_path = os.path.join(conf.music_gen_dir, folder_name, 'only_comp.mid')
     poly_melody_path = os.path.join(conf.music_gen_dir, folder_name, 'comp_and_melody.mid')
     melody_solo_path = os.path.join(conf.music_gen_dir, folder_name, 'only_melody.mid')

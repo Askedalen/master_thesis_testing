@@ -17,6 +17,11 @@ chord_dir       = os.path.join(data_dir, 'chords')
 melody_dir      = os.path.join(data_dir, 'melodies')
 instrument_dir  = os.path.join(data_dir, 'instruments')
 
+num_steps       = 128
+chord_interval  = 16
+threshold       = 0.25
+vocabulary      = 100
+
 subdivision     = 4 # Subdivision for each beat
 num_notes       = 60
 pr_start_idx    = 24
