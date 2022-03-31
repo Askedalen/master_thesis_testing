@@ -1,11 +1,9 @@
 # load Python
 module load Python
 # load CUDA
-module load CUDA/10.1.243-GCC-8.3.0
+module load CUDA
 # load cuDNN
 module load cuDNN
-# activate virtual environment
-source keras_env/bin/activate
 
 #Run script
 CUDA_VISIBLE_DEVICES=2 TMP=./tmp python file_to_run.py
@@ -17,9 +15,7 @@ nvidia_smi
 
 #check running processes
 ps -u benjamas
-#kil processe
+#kil process
 kill -9 p_id
 
 # If not working, try another core
-# Again, IF NOT WORKING, TRY ANOTHER core
-# fml

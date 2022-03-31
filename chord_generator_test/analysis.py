@@ -49,24 +49,8 @@ def plot_most_common_scales(num_songs=0):
         file = files[i]
 
         midi_data = pickle.load(open(file, 'rb'))
-        key, scale_name = mf.get_key_and_scale(midi_data)
+        _, scale_name = mf.get_key_and_scale(midi_data)
         
-        #Get modulated pianoroll
-        if key > 0:
-            midi_data_modulated = mf.modulate(midi_data, key)
-        else:
-            midi_data_modulated = midi_data
-
-        #Check if mode is ionian or aeolian
-        if scale_name == 'ionian':
-            chroma_mod = mf.get_chroma(midi_data_modulated)
-            histogram_mod = np.zeros(12)
-            chroma_mod[chroma_mod > 0] = 1
-            histogram_mod += np.sum(chroma_mod, axis=1)
-
-            if histogram_mod[9] > histogram_mod[0]:
-                midi_data_modulated = mf.modulate(midi_data, key - 3)
-                scale_name = 'aeolian'
         counts[scale_name] += 1
     plt.figure(figsize=(6.5, 5.5))
     plt.bar(range(len(counts)), list(counts.values()), align='center')
@@ -133,6 +117,6 @@ def plot_piano_roll(filename):
 
 if __name__ == "__main__":
     #plot_most_common_chords()
-    #plot_most_common_scales()
+    plot_most_common_scales()
     #plot_chroma_histogram()
-    plot_piano_roll('chord_generator_test\data\midi_mod\\0fab31e0b3aae984222693b85a7d980c.pickle')
+    #plot_piano_roll('chord_generator_test\data\midi_mod\\0fab31e0b3aae984222693b85a7d980c.pickle')

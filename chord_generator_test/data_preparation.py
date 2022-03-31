@@ -12,14 +12,14 @@ import matplotlib.pyplot as plt
 import _pickle as pickle
 
 np.random.seed(2021)
-log_interval = 10
+log_interval = 1000
 
 def list_midi_files():
     song_list = []
     if os.path.exists('song_list.pickle'):
         song_list = pickle.load(open("song_list.pickle", "rb"))
     else:
-        path = "lmd_matched"
+        path = "lmd_full"
         for r, d, f in os.walk(path):
             for file in f:
                 if '.mid' in file:
@@ -37,13 +37,13 @@ def midi_to_pickle():
         filename = os.path.basename(file).replace('.mid', '.pickle')
         midi_file = os.path.join(conf.midi_unmod_dir, filename)
         if os.path.exists(midi_file):
-            num_failed += 1
             continue
 
         try:
             midi_data = pretty_midi.PrettyMIDI(file)
         except:
             print(f'Could not load file {file}')
+            num_failed += 1
             continue
 
         # Store PrettyMIDI as pickle
@@ -67,7 +67,7 @@ def normalize_keys(num_files=0):
             continue
 
         midi_data = pickle.load(open(file, 'rb'))
-        key, scale_name = mf.get_key_and_scale(midi_data)
+        key, _ = mf.get_key_and_scale(midi_data)
         
         #Get modulated pianoroll
         if key > 0:
@@ -75,17 +75,6 @@ def normalize_keys(num_files=0):
         else:
             midi_data_modulated = midi_data
 
-        #Check if mode is ionian or aeolian
-        if scale_name == 'ionian':
-            chroma_mod = mf.get_chroma(midi_data_modulated)
-            histogram_mod = np.zeros(12)
-            chroma_mod[chroma_mod > 0] = 1
-            histogram_mod += np.sum(chroma_mod, axis=1)
-
-            if histogram_mod[9] > histogram_mod[0]:
-                midi_data_modulated = mf.modulate(midi_data, key - 3)
-                scale_name = 'aeolian'
-        
         #Store modulated PrettyMIDI as pickle
         pickle.dump(midi_data_modulated, open(midi_mod_file, 'wb'))
         if (i+1) % log_interval == 0:
@@ -182,29 +171,13 @@ def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=60, bi
     end_time = time.time()
     print(f"Finished {len(files)} songs in {end_time - start_time} seconds. {num_failed} songs failed.")
 
-def create_random_data(num_songs, steps_per_song, chord_interval, vocabulary):
-    start_time = time.time()
-    print('Generating random chord sequence...')
-    random_chord_sequence  = np.random.randint(0,  vocabulary-1, (num_songs, steps_per_song))
-    print('Generating random melody...')
-    random_melody_sequence = np.random.randint(0, conf.num_notes-1, (num_songs, steps_per_song, chord_interval, 1))
-    random_melody_sequence = to_categorical(random_melody_sequence, num_classes=conf.num_notes)
-
-    print('Writing to files...')
-    for i in range(num_songs):
-        chords_path = os.path.join(conf.random_data_dir, 'chords', f'{i:05d}.pickle')
-        melody_path = os.path.join(conf.random_data_dir, 'melodies', f'{i:05d}.pickle')
-
-        pickle.dump(random_chord_sequence[i], open(chords_path, 'wb'))
-        pickle.dump(random_melody_sequence[i], open(melody_path, 'wb'))
-    end_time = time.time()
-    print(f'Generated {num_songs} random songs in {end_time - start_time} seconds.')
-
 if __name__ == "__main__":
     #create_random_data(1000)
-    #midi_to_pickle()
-    #normalize_keys()
-    #create_chord_dict()
+    start_time = time.process_time()
+    midi_to_pickle()
+    normalize_keys()
+    create_chord_dict()
     create_ML_data(binary=True)
+    print(f"Finished all actions in {time.process_time() - start_time} seconds")
     #list_midi_files()
     #print()

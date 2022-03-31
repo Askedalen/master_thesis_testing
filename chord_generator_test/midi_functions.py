@@ -155,7 +155,7 @@ def get_key_and_scale(midi_data):
 
     dia = np.array([1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1])
     har = np.array([1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1])
-    mel = np.array([1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1])
+    mel = np.array([1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1])
     blu = np.array([1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0])
     dia_scales = []
     har_scales = []
@@ -174,28 +174,35 @@ def get_key_and_scale(midi_data):
 
     dia_match = [i for i in range(12) if (scale==dia_scales[i]).all()]
     har_match = [i for i in range(12) if (scale==har_scales[i]).all()]
-    mel_match = [i for i in range(12) if (scale==mel_scales[i]).all()]
 
     if len(dia_match) > 0:
         scale_name = "ionian"
         key = dia_match[0]
+        if histogram[key - 3] > histogram[key]:
+            scale_name = "aeolian"
+            key = key - 3
     elif len(har_match) > 0:
         scale_name = "harmonic minor"
         key = har_match[0]
-    elif len(mel_match) > 0:
-        scale_name = "melodic minor"
-        key = mel_match[0]
     else:
-        most_common_notes = np.argpartition(histogram, -6)[-6:]
+        most_common_notes = np.argpartition(histogram, -9)[-9:]
         scale = np.zeros(12)
         scale[most_common_notes] = 1
-        blu_match = [i for i in range(12) if (scale==blu_scales[i]).all()]
-        if len(blu_match) > 0:
-            scale_name = "blues"
-            key = blu_match[0]
+        mel_match = [i for i in range(12) if (scale==mel_scales[i]).all()]
+        if len(mel_match) > 0:
+            scale_name = "melodic minor"
+            key = mel_match[0]
         else:
-            scale_name = "undefined"
-            key = 0
+            most_common_notes = np.argpartition(histogram, -6)[-6:]
+            scale = np.zeros(12)
+            scale[most_common_notes] = 1
+            blu_match = [i for i in range(12) if (scale==blu_scales[i]).all()]
+            if len(blu_match) > 0:
+                scale_name = "blues"
+                key = blu_match[0]
+            else:
+                scale_name = "undefined"
+                key = 0
     return key, scale_name
 
 def piano_roll_to_midi(piano_roll, name, program=0, is_drum=False):
