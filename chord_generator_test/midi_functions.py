@@ -36,7 +36,11 @@ def get_chroma(midi_data):
     beat_length_seconds = 60 / initial_tempo # Get length of each beat in seconds
     sampling_freq = 1 / (beat_length_seconds / conf.subdivision) # Calculate sampling frequency to get 32nd notes
 
-    piano_roll = midi_data.get_chroma(sampling_freq)
+    try:
+        piano_roll = midi_data.get_chroma(sampling_freq)
+    except IndexError:
+        print('IndexError')
+        piano_roll = None
     return piano_roll
 
 def get_piano_roll(midi_data):
@@ -148,6 +152,8 @@ def get_chord_name(chord):
 
 def get_key_and_scale(midi_data):
     chroma = get_chroma(midi_data)
+    if chroma is None:
+        return None, None
     #Create histogram
     histogram = np.zeros(12)
     chroma[chroma > 0] = 1

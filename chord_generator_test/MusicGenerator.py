@@ -6,7 +6,6 @@ import config as conf
 import math
 import _pickle as pickle
 import midi_functions as mf
-
 import pretty_midi
 import os
 import time
@@ -20,14 +19,25 @@ def get_chord_dict():
     chord_to_index = chord_dict
     index_to_chord = dict((v,k) for k,v in chord_dict.items())
     return chord_to_index, index_to_chord
+
 class MusicGenerator:
-    def __init__(self):
-        self.chord_model = load_model(conf.model_filenames['chord_model'])
+    def __init__(self, chord_model=None, poly_model=None, binary=False):
+        if chord_model is None and poly_model is None:
+            self.chord_model = load_model(conf.model_filenames['chord_model'])
+            self.poly_model = load_model(conf.model_filenames['poly_model'])
+        else:
+            self.chord_model = chord_model
+            self.poly_model = poly_model
+
+        self.binary=binary
+
         self.chord_model.call = tf.function(self.chord_model.call)
-        self.poly_model = load_model(conf.model_filenames['poly_model'])
         self.poly_model.call = tf.function(self.poly_model.call)
         _, self.chord_dict = get_chord_dict()
+
+        self.reset()
         
+    def reset(self):
         self.melody = np.zeros((1, conf.num_steps, conf.num_notes))
 
         #chord_seq = [92, 92, 85, 53, 92, 92, 53, 85]
@@ -52,7 +62,7 @@ class MusicGenerator:
             self.chords[0,chord_step+1,0] = next_chord
             self.chords_expanded[0, self.current_timestep+1:self.current_timestep+1+conf.chord_interval,0] = next_chord
             #print("Sequence start chord time: ", time.process_time() - start_time)
-            print('next chord: ', self.chord_dict[next_chord])
+            #print('next chord: ', self.chord_dict[next_chord])
         else:
             conv_melody = np.reshape(self.melody, (1, -1, conf.chord_interval, conf.num_notes))
             prediction = self.chord_model([self.chords, conv_melody], training=False).numpy()
@@ -63,7 +73,7 @@ class MusicGenerator:
             self.chords_expanded[0] = np.roll(self.chords_expanded[0], -16)
             self.chords_expanded[0, -16:, 0] = next_chord
             #print("Sequence middle chord time: ", time.process_time() - start_time)
-            print('next_chord:', self.chord_dict[next_chord])
+            #print('next_chord:', self.chord_dict[next_chord])
 
     def step(self, timestep):
         start_time = time.process_time()
@@ -80,7 +90,10 @@ class MusicGenerator:
             prediction = self.poly_model([self.chords_expanded, X], training=False).numpy()[0][self.current_timestep]
             #print('pred time: ', time.process_time() - pred_start_time)
             prediction = prediction
-            prediction[prediction >= conf.threshold] = 100
+            if self.binary:
+                prediction[prediction >= conf.threshold] = 1
+            else:
+                prediction[prediction >= conf.threshold] = 100
             prediction[prediction < conf.threshold] = 0
             
             self.current_timestep += 1
@@ -99,8 +112,66 @@ class MusicGenerator:
             #prediction = np.random.rand((204))
             pred_start_time = time.process_time()
             prediction = self.poly_model([self.chords_expanded, X], training=False)[0][-1]
-            print('pred time', time.process_time() - pred_start_time)
-            prediction[prediction >= conf.threshold] = 100
+            #print('pred time', time.process_time() - pred_start_time)
+            if self.binary:
+                prediction[prediction >= conf.threshold] = 1
+            else:
+                prediction[prediction >= conf.threshold] = 100
+            prediction[prediction < conf.threshold] = 0
+            self.current_timestep += 1
+
+            #print('Sequence middle poly time: ', time.process_time() - start_time)
+            return prediction
+
+class BaselineMusicGenerator:
+    def __init__(self, model, binary=False):
+        self.model = model
+        self.model.call = tf.function(self.model.call)
+        self.binary=binary
+        self.reset()
+        
+    def reset(self):
+        self.melody = np.zeros((1, conf.num_steps, conf.num_notes))
+
+        self.counter = to_categorical(np.tile(range(conf.chord_interval), math.floor(conf.num_steps/conf.chord_interval)), num_classes=conf.chord_interval).reshape((1, conf.num_steps, conf.chord_interval))
+        self.current_timestep = 0
+        self.start_of_sequence = True
+
+    def step(self, timestep):
+        start_time = time.process_time()
+        if self.start_of_sequence:
+            self.melody[:, self.current_timestep] = timestep
+            X = np.concatenate((self.melody, self.counter), axis=2)
+            pred_start_time = time.process_time()
+            #prediction = np.random.rand((204))
+            prediction = self.model(X, training=False).numpy()[0][self.current_timestep]
+            #print('pred time: ', time.process_time() - pred_start_time)
+            prediction = prediction
+            if self.binary:
+                prediction[prediction >= conf.threshold] = 1
+            else:
+                prediction[prediction >= conf.threshold] = 100
+            prediction[prediction < conf.threshold] = 0
+            
+            self.current_timestep += 1
+            if self.current_timestep >= conf.num_steps:
+                self.start_of_sequence = False
+
+            #print('Sequence start poly time: ', time.process_time() - start_time)
+            return prediction
+        else:
+            self.melody[0] = np.roll(self.melody[0], -1)
+            self.melody[0,-1] = timestep
+
+            X = np.concatenate((self.melody, self.counter), axis=2)
+            #prediction = np.random.rand((204))
+            pred_start_time = time.process_time()
+            prediction = self.model(X, training=False)[0][-1]
+            #print('pred time', time.process_time() - pred_start_time)
+            if self.binary:
+                prediction[prediction >= conf.threshold] = 1
+            else:
+                prediction[prediction >= conf.threshold] = 100
             prediction[prediction < conf.threshold] = 0
             self.current_timestep += 1
 

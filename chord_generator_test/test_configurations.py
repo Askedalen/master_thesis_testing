@@ -99,7 +99,7 @@ class FullModel:
         self.chord_model = Model(inputs=[chord_input, melody_input], outputs=activation)
 
         self.chord_model.compile(optimizer, loss, metrics=['accuracy', 'Precision', 'Recall'])
-        #self.chord_model.summary()
+        self.chord_model.summary()
 
     def _create_poly_model(self):
         lstm_size = self.poly_config['lstm_size']
@@ -156,7 +156,7 @@ class FullModel:
         self.poly_model = Model(inputs=[chord_input, x_input], outputs=activation)
 
         self.poly_model.compile(optimizer, loss, metrics=['accuracy'])
-        #self.poly_model.summary()
+        self.poly_model.summary()
 
     def train_chord_model(self, train_data, train_steps, val_data, val_steps):
         epochs = self.chord_config['epochs']
@@ -170,7 +170,7 @@ class FullModel:
         best_weights = self.chord_model.get_weights()
         start_time = time.process_time()
         for e in range(1, epochs+1):
-            #print(f'Training epoch {e} of {epochs}...')
+            print(f'Training epoch {e} of {epochs}...')
             hist = self.chord_model.fit(
                 train_data, 
                 validation_data=val_data, 
@@ -200,10 +200,10 @@ class FullModel:
                 best_weights = self.chord_model.get_weights()
 
         end_time = time.process_time()
-        #print(f'Trained chord model for {epochs} epochs in {end_time - start_time:.2f} seconds. Best epoch: {best_epoch}')
-        #print(f"mean loss:{np.mean(self.history['chord_train']['loss'])}, best acc:{np.max(self.history['chord_train']['acc'])}")
-        #print(f"mean val loss:{np.mean(self.history['chord_val']['loss'])}, best val acc:{np.max(self.history['chord_val']['acc'])}")
-        #print()
+        print(f'Trained chord model for {epochs} epochs in {end_time - start_time:.2f} seconds. Best epoch: {best_epoch}')
+        print(f"mean loss:{np.mean(self.history['chord_train']['loss'])}, best acc:{np.max(self.history['chord_train']['acc'])}")
+        print(f"mean val loss:{np.mean(self.history['chord_val']['loss'])}, best val acc:{np.max(self.history['chord_val']['acc'])}")
+        print()
         self.chord_time = end_time - start_time
         self.best_chord_acc = best_val_acc
         self.best_chord_prec = best_val_prec
@@ -224,7 +224,7 @@ class FullModel:
 
         start_time = time.process_time()
         for e in range(1, epochs+1):
-            #print(f'Training epoch {e} of {epochs}...')
+            print(f'Training epoch {e} of {epochs}...')
             hist = self.poly_model.fit(
                 train_data, 
                 validation_data=val_data, 
@@ -254,10 +254,10 @@ class FullModel:
                 best_weights = self.poly_model.get_weights()
 
         end_time = time.process_time()
-        #print(f'Trained polyphonic model for {epochs} epochs in {end_time - start_time:.2f} seconds. Best epoch: {best_epoch}')
-        #print(f"mean loss:{np.mean(self.history['poly_train']['loss'])}, best acc:{np.max(self.history['poly_train']['acc'])}")
-        #print(f"mean val loss:{np.mean(self.history['poly_val']['loss'])}, best val acc:{np.max(self.history['poly_val']['acc'])}")
-        #print()
+        print(f'Trained polyphonic model for {epochs} epochs in {end_time - start_time:.2f} seconds. Best epoch: {best_epoch}')
+        print(f"mean loss:{np.mean(self.history['poly_train']['loss'])}, best acc:{np.max(self.history['poly_train']['acc'])}")
+        print(f"mean val loss:{np.mean(self.history['poly_val']['loss'])}, best val acc:{np.max(self.history['poly_val']['acc'])}")
+        print()
         self.poly_time = end_time - start_time
         self.best_poly_acc = best_val_acc
         #self.best_poly_prec = best_val_prec
@@ -265,64 +265,71 @@ class FullModel:
         self.best_poly_epoch = best_epoch
         self.best_poly_weights = best_weights
 
-    def plot_history(self):
+    def plot_history(self, chord=True, poly=False):
+        if not chord and not poly:
+            print("No data to plot.")
+            return
         self.test_dir = os.path.join(conf.results_dir, 'tests', self.model_name)
-        if not os.path.exists(os.path.join(self.test_dir, 'models')):
-            os.makedirs(os.path.join(self.test_dir, 'models'))
 
-        chord_loss_roof = math.ceil(np.max([self.history['chord_train']['loss'], self.history['chord_val']['loss']]))
-        poly_loss_roof = math.ceil(np.max([self.history['poly_train']['loss'], self.history['poly_val']['loss']]))
+        if chord:
+            chord_loss_roof = math.ceil(np.max([self.history['chord_train']['loss'], self.history['chord_val']['loss']]))
+            c_fig, c_axs = plt.subplots(1, 2, figsize=(10, 5))
+            c_axs[0].plot(self.history['chord_train']['loss'], 'r--', label='Loss')
+            c_axs[0].plot(self.history['chord_val']['loss'], 'g--', label='Validation loss')
+            c_axs[0].set_title('Training Loss vs Validtation Loss')
+            c_axs[0].set_xlabel('Epoch')
+            c_axs[0].set_ylabel('Loss')
+            c_axs[0].set_xlim(0, self.chord_config['epochs']-1)
+            c_axs[0].set_ylim(0, chord_loss_roof)
+            c_axs[0].legend()
 
-        c_fig, c_axs = plt.subplots(1, 2, figsize=(10, 5))
-        c_axs[0].plot(self.history['chord_train']['loss'], 'r--', label='Loss')
-        c_axs[0].plot(self.history['chord_val']['loss'], 'g--', label='Validation loss')
-        c_axs[0].set_title('Training Loss vs Validtation Loss')
-        c_axs[0].set_xlabel('Epoch')
-        c_axs[0].set_ylabel('Loss')
-        c_axs[0].set_xlim(0, self.chord_config['epochs']-1)
-        c_axs[0].set_ylim(0, chord_loss_roof)
-        c_axs[0].legend()
+            c_axs[1].plot(self.history['chord_train']['acc'], 'r--', label='Accuracy')
+            c_axs[1].plot(self.history['chord_val']['acc'], 'g--', label='Validation accuracy')
+            c_axs[1].set_title('Training Accuracy vs. Validation Accuracy')
+            c_axs[1].set_xlabel('Epoch')
+            c_axs[1].set_ylabel('Accuracy (%)')
+            c_axs[1].set_xlim(0, self.chord_config['epochs']-1)
+            c_axs[1].set_ylim(0, 1)
+            c_axs[1].legend()
+            c_fig.suptitle('Chord training history')
+            c_fig.savefig(os.path.join(self.test_dir, 'chord_history.png'))
 
-        c_axs[1].plot(self.history['chord_train']['acc'], 'r--', label='Accuracy')
-        c_axs[1].plot(self.history['chord_val']['acc'], 'g--', label='Validation accuracy')
-        c_axs[1].set_title('Training accuracy vs. Validation Accuracy')
-        c_axs[1].set_xlabel('Epoch')
-        c_axs[1].set_ylabel('Accuracy (%)')
-        c_axs[1].set_xlim(0, self.chord_config['epochs']-1)
-        c_axs[1].set_ylim(0, 1)
-        c_axs[1].legend()
-        c_fig.suptitle('Chord training history')
-        c_fig.savefig(os.path.join(self.test_dir, 'chord_history.png'))
+        if poly:
+            poly_loss_roof = math.ceil(np.max([self.history['poly_train']['loss'], self.history['poly_val']['loss']]))
+            p_fig, p_axs = plt.subplots(1, 2, figsize=(10, 5))
+            p_axs[0].plot(self.history['poly_train']['loss'], 'r--', label='Loss')
+            p_axs[0].plot(self.history['poly_val']['loss'], 'g--', label='Validation loss')
+            p_axs[0].set_title('Training Loss vs Validtation Loss')
+            p_axs[0].set_xlabel('Epoch')
+            p_axs[0].set_ylabel('Loss')
+            p_axs[0].set_xlim(0, self.poly_config['epochs']-1)
+            p_axs[0].set_ylim(0, poly_loss_roof)
+            p_axs[0].legend()
 
-        p_fig, p_axs = plt.subplots(1, 2, figsize=(10, 5))
-        p_axs[0].plot(self.history['poly_train']['loss'], 'r--', label='Loss')
-        p_axs[0].plot(self.history['poly_val']['loss'], 'g--', label='Validation loss')
-        p_axs[0].set_title('Training Loss vs Validtation Loss')
-        p_axs[0].set_xlabel('Epoch')
-        p_axs[0].set_ylabel('Loss')
-        p_axs[0].set_xlim(0, self.poly_config['epochs']-1)
-        p_axs[0].set_ylim(0, poly_loss_roof)
-        p_axs[0].legend()
+            p_axs[1].plot(self.history['poly_train']['acc'], 'r--', label='Accuracy')
+            p_axs[1].plot(self.history['poly_val']['acc'], 'g--', label='Validation accuracy')
+            p_axs[1].set_title('Training accuracy vs. Validation Accuracy')
+            p_axs[1].set_xlabel('Epoch')
+            p_axs[1].set_ylabel('Accuracy (%)')
+            p_axs[1].set_xlim(0, self.poly_config['epochs']-1)
+            p_axs[1].set_ylim(0, 1)
+            p_axs[1].legend()
+            p_fig.suptitle('Polyphonic training history')
+            p_fig.savefig(os.path.join(self.test_dir, 'poly_history.png'))
 
-        p_axs[1].plot(self.history['poly_train']['acc'], 'r--', label='Accuracy')
-        p_axs[1].plot(self.history['poly_val']['acc'], 'g--', label='Validation accuracy')
-        p_axs[1].set_title('Training accuracy vs. Validation Accuracy')
-        p_axs[1].set_xlabel('Epoch')
-        p_axs[1].set_ylabel('Accuracy (%)')
-        p_axs[1].set_xlim(0, self.poly_config['epochs']-1)
-        p_axs[1].set_ylim(0, 1)
-        p_axs[1].legend()
-        p_fig.suptitle('Polyphonic training history')
-        p_fig.savefig(os.path.join(self.test_dir, 'poly_history.png'))
-
-    def save_models(self):
-        #print('Saving chord model')
-        self.chord_model.set_weights(self.best_chord_weights)
-        self.chord_model.save(os.path.join(self.test_dir, 'models', 'chord_model.pb'))
+    def save_models(self, chord=True, poly=False):
+        if not chord and not poly:
+            print("No data to plot.")
+            return
+        if chord:
+            #print('Saving chord model')
+            self.chord_model.set_weights(self.best_chord_weights)
+            self.chord_model.save(os.path.join(self.test_dir, 'models', 'chord_model.pb'))
         
-        #print('Saving poly model')
-        self.poly_model.set_weights(self.best_poly_weights)
-        self.poly_model.save(os.path.join(self.test_dir, 'models', 'poly_model.pb'))
+        if poly:
+            #print('Saving poly model')
+            self.poly_model.set_weights(self.best_poly_weights)
+            self.poly_model.save(os.path.join(self.test_dir, 'models', 'poly_model.pb'))
         
         config_file = open(os.path.join(self.test_dir, "configs.txt"), "w")
         config_file.write('Chord config:\r\n')
@@ -362,15 +369,13 @@ if __name__ == "__main__":
     with open("poly-config-data.csv", "w") as f:
         f.write("testno,lr,lstm,batch,time,acc,epoch\n")
 
-    test_number = 16
+    test_number = 1
     
-    train_filenames, val_filenames = load.get_trainval_filenames(rand_data=conf.random_data)
-    #train_filenames = train_filenames[:50]
-    #val_filenames = val_filenames[:50]
+    train_filenames, val_filenames = load.get_trainval_filenames()
 
-    chord_batch_sizes = [128]#[64, 128, 256]
-    chord_lstm_sizes = [512]#[256, 512]
-    chord_learning_rates = [0.0001]#[0.001, 0.0001, 0.00005]
+    chord_batch_sizes = [128]#[128, 256]
+    chord_lstm_sizes = [512]#[256, 512, 1024]
+    chord_learning_rates = [0.00001]#[0.0001, 0.00001, 0.000001]
 
     best_chord_acc = 0
     best_chord_weights = None
@@ -384,6 +389,8 @@ if __name__ == "__main__":
                         'num_notes':60,
                         'chord_interval':16}
         # Get chord data
+        print('Loading chord data')
+        chord_start_time = time.process_time()
         chord_training_generator = chord_data_generator(train_filenames, infinite=False, **chord_config)
         chord_val_generator = chord_data_generator(val_filenames, infinite=False, **chord_config)
         chord_training_data = []
@@ -398,6 +405,8 @@ if __name__ == "__main__":
         chord_val_steps = len(chord_val_data)
         chord_val_data = yield_data(chord_val_data)
 
+        print(f'Loaded chord data in {time.process_time() - chord_start_time} seconds.')
+
         for lstm_size in chord_lstm_sizes:
             for learning_rate in chord_learning_rates:
                 chord_config.update({'lstm_size':lstm_size,
@@ -405,13 +414,14 @@ if __name__ == "__main__":
                                     'embedding_size':10,
                                     'epochs':100,
                                     'verbose':0})
-                print(f"Performing test {test_number} of 36")
-                for i in range(1):#range(10):
+                print('training chord network...')
+                #print(f"Performing test {test_number} of 24")
+                for i in range(1):
                     model = FullModel(chord_config=chord_config)
                     model.train_chord_model(chord_training_data, chord_training_steps, chord_val_data, chord_val_steps)
                     if model.best_chord_acc > best_chord_acc:
-                        #model.plot_history()
-                        #model.save_models()
+                        model.plot_history(chord=True, poly=False)
+                        model.save_models(chord=True, poly=False)
                         best_chord_acc = model.best_chord_acc
                         best_chord_weights = model.best_chord_weights
                         best_chord_folder = model.model_name
@@ -430,9 +440,9 @@ if __name__ == "__main__":
                         )
                 test_number += 1
 
-    poly_batch_sizes = [64, 128, 256]
-    poly_lstm_sizes = [512, 1024]
-    poly_learning_rates = [0.1, 0.01, 0.005]
+    poly_batch_sizes = [256]#[128, 256]
+    poly_lstm_sizes = [1024]#[512, 1024]
+    poly_learning_rates = [0.001]#[0.01, 0.005, 0.001]
 
     best_poly_acc = 0
     best_poly_folder = ""
@@ -445,6 +455,10 @@ if __name__ == "__main__":
                        'num_notes':60,
                        'chord_interval':16}
         # Get polyphonic data
+        print('Loading polyphonic data')
+        poly_start_time = time.process_time()
+        train_filenames = train_filenames[:12000]
+        val_filenames = val_filenames[:3000]
         poly_training_generator = poly_data_generator(train_filenames, infinite=False, **poly_config)
         poly_val_generator = poly_data_generator(val_filenames, infinite=False, **poly_config)
         poly_training_data = []
@@ -459,6 +473,8 @@ if __name__ == "__main__":
         poly_val_steps = len(poly_val_data)
         poly_val_data = yield_data(poly_val_data)
 
+        print(f'Loaded poly data in {time.process_time() - poly_start_time} seconds')
+
         for lstm_size in poly_lstm_sizes:
             for learning_rate in poly_learning_rates:
                 poly_config.update({'lstm_size':lstm_size,
@@ -466,15 +482,14 @@ if __name__ == "__main__":
                                     'embedding_size':10,
                                     'epochs':100,
                                     'verbose':0})
-    
-                print(f"Performing test {test_number} of 36")
-                test_number += 1
-                for i in range(10):
+                print('training poly network')
+                #print(f"Performing test {test_number} of 24")
+                for i in range(1):
                     model = FullModel(best_chord_config, poly_config, chord_weights=best_chord_weights)
                     model.train_poly_model(poly_training_data, poly_training_steps, poly_val_data, poly_val_steps)
                     if model.best_poly_acc > best_poly_acc:
-                        #model.plot_history()
-                        #model.save_models()
+                        model.plot_history(chord=False, poly=True)
+                        model.save_models(chord=False, poly=True)
                         best_poly_acc = model.best_poly_acc
                         best_poly_weights = model.best_poly_weights
                         best_poly_folder = model.model_name
@@ -491,6 +506,7 @@ if __name__ == "__main__":
                             #f"{model.best_poly_rec},"
                             f"{model.best_poly_epoch}\n"
                         )
+                test_number += 1
     print("Done running tests.")
     print(f"Best chord accuracy: {best_chord_acc}")
     print(f"Best poly accuracy: {best_poly_acc}")

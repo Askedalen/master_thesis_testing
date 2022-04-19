@@ -4,6 +4,7 @@ from numpy.lib.npyio import load
 import _pickle as pickle
 import time
 import matplotlib.pyplot as plt
+from pyo_testing.MusicGenerator import MusicGenerator
 from tensorflow.keras.models import load_model
 from tensorflow.python.keras.backend import reshape, function
 import math
@@ -102,11 +103,8 @@ def get_chords_and_melody(filename, binary=False, rand_data=False):
 
     return chord_data, melody_data
 
-def get_instruments(filename, binary=False, rand_data=False):
-    if rand_data:
-        instrument_path = os.path.join(conf.random_data_dir, 'chords', filename)
-    else:
-        instrument_path = os.path.join(conf.instrument_dir, filename)
+def get_instruments(filename, binary=False):
+    instrument_path = os.path.join(conf.instrument_dir, filename)
 
     instrument_data = pickle.load(open(instrument_path, 'rb'))
 
@@ -116,19 +114,48 @@ def get_instruments(filename, binary=False, rand_data=False):
 
     return instrument_data
 
-def get_trainval_filenames(num_songs=0, rand_data=False):
-    if rand_data:
-        data_path = os.path.join(conf.random_data_dir, 'chords')
+def get_trainval_filenames(num_songs=0):
+    if os.path.exists('train_filenames.pickle') and os.path.exists('val_filenames.pickle') and os.path.exists('test_filenames.pickle'):
+        train_filenames = pickle.load(open('train_filenames.pickle', 'rb'))
+        val_filenames = pickle.load(open('val_filenames.pickle', 'rb'))
+        return train_filenames, val_filenames
     else:
-        data_path = os.path.join(conf.data_dir, 'chords')
-    data_files = [path for path in os.listdir(data_path) if '.pickle' in path]
-    if num_songs > 0:
-        data_files = data_files[:num_songs]
+        data_path = os.path.join(conf.data_dir, 'melodies')
+        data_files = [path for path in os.listdir(data_path) if '.pickle' in path]
+        np.random.shuffle(data_files)
+        if num_songs > 0:
+            data_files = data_files[:num_songs]
 
-    train_count = math.floor((len(data_files)/100)*80)
-    train_set = data_files[:train_count]
-    val_set = data_files[train_count:]
-    return train_set, val_set
+        trainval_count = math.floor((len(data_files)/100)*80)
+        trainval_filenames = data_files[:trainval_count]
+        test_filenames = data_files[trainval_count:]
+        train_count = math.floor((len(trainval_filenames)/100)*80)
+        train_filenames = trainval_filenames[:train_count]
+        val_filenames = trainval_filenames[train_count:]
+
+        pickle.dump(train_filenames, open('train_filenames.pickle', 'wb'))
+        pickle.dump(val_filenames, open('val_filenames.pickle', 'wb'))
+        pickle.dump(test_filenames, open('test_filenames.pickle', 'wb'))
+
+        return train_filenames, val_filenames
+
+def load_test_data(num_songs=0):
+    test_filenames = pickle.load('test_filenames.pickle')
+    if num_songs > 0:
+        test_filenames = test_filenames[:num_songs]
+    melodies = []
+    targets = []
+
+    for filename in test_filenames:
+        instrument_data = get_instruments(filename, binary=True)
+        _, melody_data = get_chords_and_melody(filename, binary=True)
+        melody_data = np.reshape(melody_data, (-1, conf.num_notes))
+        melodies.append(melody_data)
+        targets.append(instrument_data)
+
+    return melodies, targets
+
+
 
 def load_midi_unmod():
     files = []

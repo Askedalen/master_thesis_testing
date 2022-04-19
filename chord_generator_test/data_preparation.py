@@ -67,7 +67,10 @@ def normalize_keys(num_files=0):
             continue
 
         midi_data = pickle.load(open(file, 'rb'))
-        key, _ = mf.get_key_and_scale(midi_data)
+        key, scale = mf.get_key_and_scale(midi_data)
+        if key is None or scale == "undefined":
+            print("Scale: ", scale)
+            continue
         
         #Get modulated pianoroll
         if key > 0:
@@ -123,8 +126,8 @@ def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=60, bi
         chords_file = os.path.join(conf.chord_dir, filename)
         melody_file = os.path.join(conf.melody_dir, filename)
         instrument_file = os.path.join(conf.instrument_dir, filename)
-        #if os.path.exists(melody_file):
-        #    continue
+        if os.path.exists(melody_file):
+            continue
 
         midi_data_modulated = pickle.load(open(file, 'rb'))
 
@@ -138,7 +141,12 @@ def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=60, bi
         melody_rest_steps = chord_interval - melody.shape[0] % chord_interval
         if melody_rest_steps > 0:
             melody = np.resize(melody.T, (chords.shape[0], chord_interval, num_notes))
-            melody[-1, -melody_rest_steps:,] = 0
+            try:
+                melody[-1, -melody_rest_steps:,] = 0
+            except IndexError:
+                print("IndexError melody")
+                num_failed += 1
+                continue
             instruments = np.resize(instruments, (chords.shape[0]*chord_interval, instruments.shape[1]))
             instruments[-1, -melody_rest_steps:,] = 0
         else:
@@ -174,9 +182,9 @@ def create_ML_data(num_files=0, max_steps=8, chord_interval=16, num_notes=60, bi
 if __name__ == "__main__":
     #create_random_data(1000)
     start_time = time.process_time()
-    midi_to_pickle()
-    normalize_keys()
-    create_chord_dict()
+    #midi_to_pickle()
+    #normalize_keys()
+    #create_chord_dict()
     create_ML_data(binary=True)
     print(f"Finished all actions in {time.process_time() - start_time} seconds")
     #list_midi_files()
