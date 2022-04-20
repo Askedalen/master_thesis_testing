@@ -37,7 +37,7 @@ def plot_most_common_chords(num_songs=0):
     plt.savefig('chord_occurrences.png')
 
 def plot_most_common_scales(num_songs=0):
-    files = load.list_pickle_files('midi_mod', num_songs)
+    files = load.list_pickle_files('midi_unmod', num_songs)
     counts = {'ionian': 0,
               'aeolian': 0,
               'harmonic minor': 0,
@@ -118,5 +118,6 @@ def plot_piano_roll(filename):
 if __name__ == "__main__":
     #plot_most_common_chords()
     plot_most_common_scales()
+    #plot_full_histogram()
     #plot_chroma_histogram()
     #plot_piano_roll('chord_generator_test\data\midi_mod\\0fab31e0b3aae984222693b85a7d980c.pickle')

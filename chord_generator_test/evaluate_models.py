@@ -23,21 +23,24 @@ if __name__ == '__main__':
     else:
         chord_model_filename = "results/tests/d220417_t1436/models/chord_model.pb"
         poly_model_filename = "results/tests/d220417_t1938/models/poly_model.pb"
-        baseline_model_filename = "results/tests/baseline_d220411_t2002/model.pb"
+        baseline_model_filename = "results/tests/baseline_d220419_t1610/model.pb"
         
     chord_model = load_model(chord_model_filename)
     poly_model = load_model(poly_model_filename)
 
+    threshold=0.1
+
     print('Loading test data...')
-    melodies, targets = load.load_test_data(num_songs=1000)
+    melodies, targets = load.load_test_data(num_songs=100)
     tp = 0
     tn = 0
     fp = 0
     fn = 0
 
     print('Testing main model')
-    generator = MusicGenerator(chord_model=chord_model, poly_model=poly_model, binary=True)
+    generator = MusicGenerator(chord_model=chord_model, poly_model=poly_model, binary=True, threshold=threshold)
     for i in range(len(melodies)):
+        print(f'Analysing song {i} of {len(melodies)}') 
         generator.reset()
         melody = melodies[i]
         target = targets[i]
@@ -62,11 +65,14 @@ if __name__ == '__main__':
     prec = tp/(tp + fp)
     rec = tp/(tp + fn)
 
+    print(tp, tn, fp, fn)
     print('Accuracy:', acc)
     print('Precision:', prec)
     print('Recall:', rec)
     print('Total time:', time.process_time() - start_time)
     print()
+
+    exit()
 
     print('Evaluating baseline model')
     b_start_time = time.process_time()
@@ -102,6 +108,7 @@ if __name__ == '__main__':
     b_prec = b_tp/(b_tp + b_fp)
     b_rec = b_tp/(b_tp + b_fn)
 
+    print(tp, tn, fp, fn)
     print('Accuracy:', b_acc)
     print('Precision:', b_prec)
     print('Recall:', b_rec)

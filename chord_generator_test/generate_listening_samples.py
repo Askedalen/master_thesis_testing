@@ -18,19 +18,25 @@ if conf.testing:
 else:
     chord_model_filename = "results/tests/d220417_t1436/models/chord_model.pb"
     poly_model_filename = "results/tests/d220417_t1938/models/poly_model.pb"
-    baseline_model_filename = "results/tests/baseline_d220411_t2002/model.pb"
+    baseline_model_filename = "results/tests/baseline_d220419_t1610/model.pb"
 
 chord_model = load_model(chord_model_filename)
 poly_model = load_model(poly_model_filename)
 
-generator = MusicGenerator(chord_model=chord_model, poly_model=poly_model)
+threshold = 0.08
+
+generator = MusicGenerator(chord_model=chord_model, poly_model=poly_model, threshold=threshold)
 
 melody_filenames = pickle.load(open('test_filenames.pickle', 'rb'))
 
-melody_filenames = melody_filenames[:10]
+melody_filenames = melody_filenames[:50]
 
 for random_song in melody_filenames:
+    generator.reset()
     folder_name = os.path.basename(random_song).replace('.pickle', '')
+    if os.path.exists(os.path.join(conf.music_gen_dir, folder_name)):
+        print(f'{folder_name} already exists')
+        continue
     print(f"Generating accompaniment for {folder_name}")
     
     melody = pickle.load(open(os.path.join(conf.melody_dir, random_song), 'rb'))

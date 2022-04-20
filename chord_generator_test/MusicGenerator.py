@@ -21,7 +21,7 @@ def get_chord_dict():
     return chord_to_index, index_to_chord
 
 class MusicGenerator:
-    def __init__(self, chord_model=None, poly_model=None, binary=False):
+    def __init__(self, chord_model=None, poly_model=None, binary=False, threshold=0.25):
         if chord_model is None and poly_model is None:
             self.chord_model = load_model(conf.model_filenames['chord_model'])
             self.poly_model = load_model(conf.model_filenames['poly_model'])
@@ -30,6 +30,7 @@ class MusicGenerator:
             self.poly_model = poly_model
 
         self.binary=binary
+        self.threshold=threshold
 
         self.chord_model.call = tf.function(self.chord_model.call)
         self.poly_model.call = tf.function(self.poly_model.call)
@@ -90,11 +91,12 @@ class MusicGenerator:
             prediction = self.poly_model([self.chords_expanded, X], training=False).numpy()[0][self.current_timestep]
             #print('pred time: ', time.process_time() - pred_start_time)
             prediction = prediction
+            #print(np.max(prediction), np.min(prediction), np.mean(prediction))
             if self.binary:
-                prediction[prediction >= conf.threshold] = 1
+                prediction[prediction >= self.threshold] = 1
             else:
-                prediction[prediction >= conf.threshold] = 100
-            prediction[prediction < conf.threshold] = 0
+                prediction[prediction >= self.threshold] = 100
+            prediction[prediction < self.threshold] = 0
             
             self.current_timestep += 1
             if self.current_timestep >= conf.num_steps:
@@ -114,20 +116,21 @@ class MusicGenerator:
             prediction = self.poly_model([self.chords_expanded, X], training=False).numpy()[0][-1]
             #print('pred time', time.process_time() - pred_start_time)
             if self.binary:
-                prediction[prediction >= conf.threshold] = 1
+                prediction[prediction >= self.threshold] = 1
             else:
-                prediction[prediction >= conf.threshold] = 100
-            prediction[prediction < conf.threshold] = 0
+                prediction[prediction >= self.threshold] = 100
+            prediction[prediction < self.threshold] = 0
             self.current_timestep += 1
 
             #print('Sequence middle poly time: ', time.process_time() - start_time)
             return prediction
 
 class BaselineMusicGenerator:
-    def __init__(self, model, binary=False):
+    def __init__(self, model, binary=False, threshold=0.25):
         self.model = model
         self.model.call = tf.function(self.model.call)
         self.binary=binary
+        self.threshold=threshold
         self.reset()
         
     def reset(self):
@@ -148,10 +151,10 @@ class BaselineMusicGenerator:
             #print('pred time: ', time.process_time() - pred_start_time)
             prediction = prediction
             if self.binary:
-                prediction[prediction >= conf.threshold] = 1
+                prediction[prediction >= self.threshold] = 1
             else:
-                prediction[prediction >= conf.threshold] = 100
-            prediction[prediction < conf.threshold] = 0
+                prediction[prediction >= self.threshold] = 100
+            prediction[prediction < self.threshold] = 0
             
             self.current_timestep += 1
             if self.current_timestep >= conf.num_steps:
@@ -169,10 +172,10 @@ class BaselineMusicGenerator:
             prediction = self.model(self.melody, training=False).numpy()[0][-1]
             #print('pred time', time.process_time() - pred_start_time)
             if self.binary:
-                prediction[prediction >= conf.threshold] = 1
+                prediction[prediction >= self.threshold] = 1
             else:
-                prediction[prediction >= conf.threshold] = 100
-            prediction[prediction < conf.threshold] = 0
+                prediction[prediction >= self.threshold] = 100
+            prediction[prediction < self.threshold] = 0
             self.current_timestep += 1
 
             #print('Sequence middle poly time: ', time.process_time() - start_time)
