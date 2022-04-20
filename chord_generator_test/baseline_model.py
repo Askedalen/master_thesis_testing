@@ -1,3 +1,4 @@
+from calendar import c
 from http.client import REQUESTED_RANGE_NOT_SATISFIABLE
 import os
 from queue import Full
@@ -39,6 +40,7 @@ class BaselineModel:
         batch_size = self.config['batch_size']
         max_steps = self.config['max_steps']
         num_notes = self.config['num_notes']
+        counter_size = self.config['counter_size']
         lstm_size = self.config['lstm_size']
         learning_rate = self.config['learning_rate']
         output_size = self.config['output_size']
@@ -48,7 +50,7 @@ class BaselineModel:
         loss = 'binary_crossentropy'
 
         self.model = Sequential()
-        self.model.add(LSTM(lstm_size, return_sequences=True, input_shape=(max_steps, num_notes)))
+        self.model.add(LSTM(lstm_size, return_sequences=True, input_shape=(max_steps, num_notes+counter_size)))
         self.model.add(Dense(output_size))
         self.model.add(Activation(activation_function))
         self.model.compile(loss=loss, optimizer=optimizer, metrics=['accuracy'])
@@ -65,6 +67,7 @@ class BaselineModel:
 
         start_time = time.process_time()
         for e in range(1, epochs+1):
+            print(f'Training epoch {e} of {epochs}')
             hist = self.model.fit(
                 train_data,
                 validation_data=val_data,
@@ -153,6 +156,7 @@ if __name__ == "__main__":
         'batch_size':128,
         'max_steps':128,
         'num_notes':60,
+        'counter_size':16,
         'lstm_size':1024,
         'learning_rate':0.0001,
         'output_size':204,
@@ -165,7 +169,7 @@ if __name__ == "__main__":
     val_steps = len(val_data)
     val_data = yield_data(val_data)
 
-    for i in range(10):
+    for i in range(1):
         baseline_model = BaselineModel(config)
         baseline_model.train_model(training_data, training_steps, val_data, val_steps)
         baseline_model.plot_history()

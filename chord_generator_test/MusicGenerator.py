@@ -111,7 +111,7 @@ class MusicGenerator:
             X = np.concatenate((self.melody, self.counter), axis=2)
             #prediction = np.random.rand((204))
             pred_start_time = time.process_time()
-            prediction = self.poly_model([self.chords_expanded, X], training=False)[0][-1]
+            prediction = self.poly_model([self.chords_expanded, X], training=False).numpy()[0][-1]
             #print('pred time', time.process_time() - pred_start_time)
             if self.binary:
                 prediction[prediction >= conf.threshold] = 1
@@ -144,7 +144,7 @@ class BaselineMusicGenerator:
             X = np.concatenate((self.melody, self.counter), axis=2)
             pred_start_time = time.process_time()
             #prediction = np.random.rand((204))
-            prediction = self.model(X, training=False).numpy()[0][self.current_timestep]
+            prediction = self.model(self.melody, training=False).numpy()[0][self.current_timestep]
             #print('pred time: ', time.process_time() - pred_start_time)
             prediction = prediction
             if self.binary:
@@ -166,7 +166,7 @@ class BaselineMusicGenerator:
             X = np.concatenate((self.melody, self.counter), axis=2)
             #prediction = np.random.rand((204))
             pred_start_time = time.process_time()
-            prediction = self.model(X, training=False)[0][-1]
+            prediction = self.model(self.melody, training=False).numpy()[0][-1]
             #print('pred time', time.process_time() - pred_start_time)
             if self.binary:
                 prediction[prediction >= conf.threshold] = 1
@@ -179,50 +179,4 @@ class BaselineMusicGenerator:
             return prediction
 
 if __name__ == '__main__':
-    generator = MusicGenerator()
-
-    melody_filenames = pickle.load(open('test_filenames.pickle', 'rb'))
-
-    random_song = "f"
-    while not os.path.exists(os.path.join('chord_generator_test', 'data', 'melodies', random_song)):
-        random_song = melody_filenames[np.random.randint(0, len(melody_filenames))+2]
-    folder_name = os.path.basename(random_song).replace('.pickle', '')
-    print(f"Generating accompaniment for {folder_name}")
-
-    melody = pickle.load(open(os.path.join('chord_generator_test', 'data', 'melodies', random_song), 'rb'))
-    melody[melody > 0] = 1
-
-    melody_sum_step = np.sum(melody, axis=(1, 2))
-    melody_sum_step[melody_sum_step > 0] = 1
-    melody_start = np.argmax(melody_sum_step)
-    melody = melody[melody_start:]
-    melody = np.reshape(melody, (-1, 60))
-
-    gen = np.zeros((melody.shape[0], (conf.num_notes*3)+24))
-    for i in range(512):
-        gen[i] = generator.step(melody[i])
-
-
-    midi_output = mf.get_poly_output_as_midi(gen)
-
-    # Get melody as MIDI
-    pianoroll_melody = melody[melody_start*conf.chord_interval:(melody_start*conf.chord_interval)+conf.num_steps]
-    pianoroll_melody = pianoroll_melody.astype(float)
-    pianoroll_melody[pianoroll_melody > 0] = 100
-    melody_midi = mf.piano_roll_to_midi(pianoroll_melody, 'melody', program=66)
-    melody_midi_solo = pretty_midi.PrettyMIDI()
-    melody_midi_solo.instruments.append(melody_midi)
-
-    os.mkdir(os.path.join(conf.music_gen_dir, folder_name))
-
-    poly_midi_path = os.path.join(conf.music_gen_dir, folder_name, 'only_comp.mid')
-    poly_melody_path = os.path.join(conf.music_gen_dir, folder_name, 'comp_and_melody.mid')
-    melody_solo_path = os.path.join(conf.music_gen_dir, folder_name, 'only_melody.mid')
-    chord_path = os.path.join(conf.music_gen_dir, folder_name, 'chord_sequence.txt')
-
-    midi_output.write(poly_midi_path)
-    midi_output.instruments.append(melody_midi)
-    midi_output.write(poly_melody_path)
-    melody_midi_solo.write(melody_solo_path)
-    
-    print()
+    pass

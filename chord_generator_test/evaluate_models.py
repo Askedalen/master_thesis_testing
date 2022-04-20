@@ -16,20 +16,26 @@ np.random.seed(2021)
 if __name__ == '__main__':
     print('Evaluating chord/poly model')
     start_time = time.process_time()
-    chord_model_filename = ""
-    poly_model_filename = ""
-    baseline_model_filename = ""
+    if conf.testing:
+        chord_model_filename = "chord_generator_test\\results\\tests\\full_model\models\chord_model.pb"
+        poly_model_filename = "chord_generator_test\\results\\tests\\full_model\models\poly_model.pb"
+        baseline_model_filename = "chord_generator_test\\results\\tests\\baseline\\baseline_d220411_t2140/model.pb"
+    else:
+        chord_model_filename = "results/tests/d220417_t1436/models/chord_model.pb"
+        poly_model_filename = "results/tests/d220417_t1938/models/poly_model.pb"
+        baseline_model_filename = "results/tests/baseline_d220411_t2002/model.pb"
+        
     chord_model = load_model(chord_model_filename)
     poly_model = load_model(poly_model_filename)
 
     print('Loading test data...')
-    melodies, targets = load.load_test_data(num_songs=10)
-
+    melodies, targets = load.load_test_data(num_songs=1000)
     tp = 0
     tn = 0
     fp = 0
     fn = 0
 
+    print('Testing main model')
     generator = MusicGenerator(chord_model=chord_model, poly_model=poly_model, binary=True)
     for i in range(len(melodies)):
         generator.reset()
@@ -37,17 +43,18 @@ if __name__ == '__main__':
         target = targets[i]
 
         output = []
-        for j in range(len(melody)):
+        for j in range(len(target)):
             timestep = melody[j]
+            target_timestep = target[j]
             out = generator.step(timestep)
             for x in range(len(out)):
-                if out[x] and target[x]:
+                if out[x] and target_timestep[x]:
                     tp += 1
-                elif not out[x] and not target[x]:
+                elif not out[x] and not target_timestep[x]:
                     tn += 1
-                elif out[x] and not target[x]:
+                elif out[x] and not target_timestep[x]:
                     fp += 1
-                elif not out[x] and target[x]:
+                elif not out[x] and target_timestep[x]:
                     fn += 1
     
     total_preds = tp + tn + fp + fn
@@ -76,17 +83,18 @@ if __name__ == '__main__':
         target = targets[i]
 
         output = []
-        for j in range(len(melody)):
+        for j in range(len(target)):
             timestep = melody[j]
+            target_timestep = target[j]
             out = baseline_generator.step(timestep)
             for x in range(len(out)):
-                if out[x] and target[x]:
+                if out[x] and target_timestep[x]:
                     b_tp += 1
-                elif not out[x] and not target[x]:
+                elif not out[x] and not target_timestep[x]:
                     b_tn += 1
-                elif out[x] and not target[x]:
+                elif out[x] and not target_timestep[x]:
                     b_fp += 1
-                elif not out[x] and target[x]:
+                elif not out[x] and target_timestep[x]:
                     b_fn += 1
     
     total_preds = b_tp + b_tn + b_fp + b_fn
