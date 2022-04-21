@@ -5,6 +5,11 @@ random_data     = False
 
 prefix_folder = 'chord_generator_test'
 
+model_filenames = { 
+    'chord_model':'chord_generator_test/results/tests/full_model/models/chord_model.pb', 
+    'poly_model':'chord_generator_test/results/tests/full_model/models/poly_model.pb',
+}
+
 data_dir        = os.path.join(prefix_folder, 'data')
 results_dir     = os.path.join(prefix_folder, 'results')
 chord_model_dir = os.path.join(results_dir, 'models', 'chord')

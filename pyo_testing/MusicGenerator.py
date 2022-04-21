@@ -98,7 +98,7 @@ class MusicGenerator:
             X = np.concatenate((self.melody, self.counter), axis=2)
             #prediction = np.random.rand((204))
             pred_start_time = time.process_time()
-            prediction = self.poly_model([self.chords_expanded, X], training=False)[0][-1]
+            prediction = self.poly_model([self.chords_expanded, X], training=False).numpy()[0][-1]
             print('pred time', time.process_time() - pred_start_time)
             prediction[prediction >= conf.threshold] = 100
             prediction[prediction < conf.threshold] = 0

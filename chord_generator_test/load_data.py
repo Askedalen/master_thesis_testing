@@ -4,7 +4,6 @@ from numpy.lib.npyio import load
 import _pickle as pickle
 import time
 import matplotlib.pyplot as plt
-from pyo_testing.MusicGenerator import MusicGenerator
 from tensorflow.keras.models import load_model
 from tensorflow.python.keras.backend import reshape, function
 import math
@@ -140,7 +139,7 @@ def get_trainval_filenames(num_songs=0):
         return train_filenames, val_filenames
 
 def load_test_data(num_songs=0):
-    test_filenames = pickle.load('test_filenames.pickle')
+    test_filenames = pickle.load(open('test_filenames.pickle', 'rb'))
     if num_songs > 0:
         test_filenames = test_filenames[:num_songs]
     melodies = []

@@ -43,6 +43,8 @@ class FullModel:
             'poly_val':{'loss':[], 'acc':[]}
         }
         self.model_name = f"d{datetime.datetime.now().strftime('%y%m%d_t%H%M')}" 
+        self.test_dir = os.path.join(conf.results_dir, 'tests', self.model_name)
+        os.mkdir(self.test_dir)
 
     def _create_chord_model(self):
         batch_size = self.chord_config['batch_size']
@@ -269,8 +271,6 @@ class FullModel:
         if not chord and not poly:
             print("No data to plot.")
             return
-        self.test_dir = os.path.join(conf.results_dir, 'tests', self.model_name)
-
         if chord:
             chord_loss_roof = math.ceil(np.max([self.history['chord_train']['loss'], self.history['chord_val']['loss']]))
             c_fig, c_axs = plt.subplots(1, 2, figsize=(10, 5))
@@ -331,12 +331,12 @@ class FullModel:
             self.poly_model.set_weights(self.best_poly_weights)
             self.poly_model.save(os.path.join(self.test_dir, 'models', 'poly_model.pb'))
         
-        config_file = open(os.path.join(self.test_dir, "configs.txt"), "w")
-        config_file.write('Chord config:\r\n')
-        config_file.write(str(self.chord_config))
-        config_file.write('\r\nPoly config:\r\n')
-        config_file.write(str(self.poly_config))
-        config_file.close()
+        #config_file = open(os.path.join(self.test_dir, "configs.txt"), "w")
+        #config_file.write('Chord config:\r\n')
+        #config_file.write(str(self.chord_config))
+        #config_file.write('\r\nPoly config:\r\n')
+        #config_file.write(str(self.poly_config))
+        #config_file.close()
 
     def get_best_val_acc(self):
         return self.best_val_acc
@@ -372,6 +372,8 @@ if __name__ == "__main__":
     test_number = 1
     
     train_filenames, val_filenames = load.get_trainval_filenames()
+    #train_filenames = train_filenames[:50]
+    #val_filenames = val_filenames[:50]
 
     chord_batch_sizes = [128]#[128, 256]
     chord_lstm_sizes = [512]#[256, 512, 1024]
@@ -380,9 +382,19 @@ if __name__ == "__main__":
     best_chord_acc = 0
     best_chord_weights = None
     best_chord_folder = ""
-    best_chord_config = {}
-
-    for batch_size in chord_batch_sizes:
+    best_chord_config = {
+        'batch_size':chord_batch_sizes[0],
+        'vocabulary':100,
+        'max_steps':8,
+        'num_notes':60,
+        'chord_interval':16,
+        'lstm_size':chord_lstm_sizes[0],
+        'learning_rate':chord_learning_rates[0],
+        'embedding_size':10,
+        'epochs':100,
+        'verbose':0
+    }
+    """for batch_size in chord_batch_sizes:
         chord_config = {'batch_size':batch_size,
                         'vocabulary':100,
                         'max_steps':8,
@@ -438,8 +450,11 @@ if __name__ == "__main__":
                             f"{model.best_chord_rec},"
                             f"{model.best_chord_epoch}\n"
                         )
-                test_number += 1
-
+                test_number += 1"""
+    
+    pretrained_chord_model = load_model('results/tests/d220417_t1436/models/chord_model.pb')
+    best_chord_weights = pretrained_chord_model.get_weights()
+    
     poly_batch_sizes = [256]#[128, 256]
     poly_lstm_sizes = [1024]#[512, 1024]
     poly_learning_rates = [0.001]#[0.01, 0.005, 0.001]
@@ -457,8 +472,8 @@ if __name__ == "__main__":
         # Get polyphonic data
         print('Loading polyphonic data')
         poly_start_time = time.process_time()
-        train_filenames = train_filenames[:12000]
-        val_filenames = val_filenames[:3000]
+        train_filenames = train_filenames[:48000]
+        val_filenames = val_filenames[:12000]
         poly_training_generator = poly_data_generator(train_filenames, infinite=False, **poly_config)
         poly_val_generator = poly_data_generator(val_filenames, infinite=False, **poly_config)
         poly_training_data = []
