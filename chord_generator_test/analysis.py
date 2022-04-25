@@ -51,7 +51,13 @@ def plot_most_common_scales(num_songs=0):
         midi_data = pickle.load(open(file, 'rb'))
         _, scale_name = mf.get_key_and_scale(midi_data)
         
-        counts[scale_name] += 1
+        try:
+            counts[scale_name] += 1
+        except:
+            print("Error: scale name ", scale_name)
+            continue
+        if i % 1000 == 0:
+            print(f'Recorded the scales of {i} songs')
     plt.figure(figsize=(6.5, 5.5))
     plt.bar(range(len(counts)), list(counts.values()), align='center')
     plt.xticks(range(len(counts)), scale_names)

@@ -432,7 +432,7 @@ if __name__ == "__main__":
                 chord_config.update({'lstm_size':lstm_size,
                                     'learning_rate':learning_rate,
                                     'embedding_size':10,
-                                    'epochs':20,
+                                    'epochs':50,
                                     'verbose':0})
                 print('training chord network...')
                 #print(f"Performing test {test_number} of 24")
@@ -460,8 +460,8 @@ if __name__ == "__main__":
                         )
                 test_number += 1
     
-    #pretrained_chord_model = load_model('results/tests/d220417_t1436/models/chord_model.pb')
-    #best_chord_weights = pretrained_chord_model.get_weights()
+    pretrained_chord_model = load_model('results/tests/d220421_t1123/models/chord_model.pb')
+    best_chord_weights = pretrained_chord_model.get_weights()
     
     poly_batch_sizes = [256]#[128, 256]
     poly_lstm_sizes = [1024]#[512, 1024]
@@ -480,8 +480,8 @@ if __name__ == "__main__":
         # Get polyphonic data
         print('Loading polyphonic data')
         poly_start_time = time.process_time()
-        #train_filenames = train_filenames[:48000]
-        #val_filenames = val_filenames[:12000]
+        train_filenames = train_filenames[:48000]
+        val_filenames = val_filenames[:12000]
         poly_training_generator = poly_data_generator(train_filenames, infinite=False, **poly_config)
         poly_val_generator = poly_data_generator(val_filenames, infinite=False, **poly_config)
         poly_training_data = []
@@ -503,7 +503,7 @@ if __name__ == "__main__":
                 poly_config.update({'lstm_size':lstm_size,
                                     'learning_rate':learning_rate,
                                     'embedding_size':10,
-                                    'epochs':10,
+                                    'epochs':50,
                                     'verbose':0})
                 print('training poly network')
                 #print(f"Performing test {test_number} of 24")

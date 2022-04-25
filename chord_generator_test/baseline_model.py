@@ -140,8 +140,8 @@ if __name__ == "__main__":
     epochs = []
     times = []
     train_filenames, val_filenames = load.get_trainval_filenames()
-    train_filenames = train_filenames[:12000]
-    val_filenames = val_filenames[:3000]
+    #train_filenames = train_filenames[:12000]
+    #val_filenames = val_filenames[:3000]
     print('Loading data...')
     training_generator = baseline_data_generator(train_filenames)
     val_generator = baseline_data_generator(val_filenames)
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         'lstm_size':1024,
         'learning_rate':0.0001,
         'output_size':204,
-        'epochs':100,
+        'epochs':10,
         'verbose':0
     }
 

@@ -16,8 +16,8 @@ if conf.testing:
     poly_model_filename = "chord_generator_test\\results\\tests\\full_model\models\poly_model.pb"
     baseline_model_filename = "chord_generator_test\\results\\tests\\baseline\\baseline_d220411_t2140/model.pb"
 else:
-    chord_model_filename = "results/tests/d220417_t1436/models/chord_model.pb"
-    poly_model_filename = "results/tests/d220417_t1938/models/poly_model.pb"
+    chord_model_filename = "results/tests/d220421_t1123/models/chord_model.pb"
+    poly_model_filename = "results/tests/d220422_t1154/models/poly_model.pb"
     baseline_model_filename = "results/tests/baseline_d220419_t1610/model.pb"
 
 chord_model = load_model(chord_model_filename)
@@ -29,12 +29,14 @@ generator = MusicGenerator(chord_model=chord_model, poly_model=poly_model, thres
 
 melody_filenames = pickle.load(open('test_filenames.pickle', 'rb'))
 
-melody_filenames = melody_filenames[:50]
+#melody_filenames = melody_filenames[50:100]
+
+melody_filenames = ['33e5a8cf07044399f6b99635aee74244.pickle', '532c7ba6291d68c7803035f193a52b76.pickle', '817ce7dfec1502645ef1aa56dcf8fb4b.pickle']
 
 for random_song in melody_filenames:
     generator.reset()
     folder_name = os.path.basename(random_song).replace('.pickle', '')
-    if os.path.exists(os.path.join(conf.music_gen_dir, folder_name)):
+    if os.path.exists(os.path.join(conf.music_gen_dir, 'test', folder_name)):
         print(f'{folder_name} already exists')
         continue
     print(f"Generating accompaniment for {folder_name}")
@@ -62,12 +64,12 @@ for random_song in melody_filenames:
     melody_midi_solo = pretty_midi.PrettyMIDI()
     melody_midi_solo.instruments.append(melody_midi)
 
-    os.mkdir(os.path.join(conf.music_gen_dir, folder_name))
+    os.mkdir(os.path.join(conf.music_gen_dir, 'test', folder_name))
 
-    poly_midi_path = os.path.join(conf.music_gen_dir, folder_name, 'only_comp.mid')
-    poly_melody_path = os.path.join(conf.music_gen_dir, folder_name, 'comp_and_melody.mid')
-    melody_solo_path = os.path.join(conf.music_gen_dir, folder_name, 'only_melody.mid')
-    chord_path = os.path.join(conf.music_gen_dir, folder_name, 'chord_sequence.txt')
+    poly_midi_path = os.path.join(conf.music_gen_dir, 'test', folder_name, 'only_comp.mid')
+    poly_melody_path = os.path.join(conf.music_gen_dir, 'test', folder_name, 'comp_and_melody.mid')
+    melody_solo_path = os.path.join(conf.music_gen_dir, 'test', folder_name, 'only_melody.mid')
+    chord_path = os.path.join(conf.music_gen_dir, 'test', folder_name, 'chord_sequence.txt')
 
     midi_output.write(poly_midi_path)
     midi_output.instruments.append(melody_midi)
