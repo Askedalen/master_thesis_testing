@@ -29,9 +29,9 @@ generator = MusicGenerator(chord_model=chord_model, poly_model=poly_model, thres
 
 melody_filenames = pickle.load(open('test_filenames.pickle', 'rb'))
 
-#melody_filenames = melody_filenames[50:100]
+melody_filenames = melody_filenames[50:100]
 
-melody_filenames = ['33e5a8cf07044399f6b99635aee74244.pickle', '532c7ba6291d68c7803035f193a52b76.pickle', '817ce7dfec1502645ef1aa56dcf8fb4b.pickle']
+#melody_filenames = ['33e5a8cf07044399f6b99635aee74244.pickle', '532c7ba6291d68c7803035f193a52b76.pickle', '817ce7dfec1502645ef1aa56dcf8fb4b.pickle']
 
 for random_song in melody_filenames:
     generator.reset()

@@ -147,7 +147,7 @@ class BaselineMusicGenerator:
             X = np.concatenate((self.melody, self.counter), axis=2)
             pred_start_time = time.process_time()
             #prediction = np.random.rand((204))
-            prediction = self.model(self.melody, training=False).numpy()[0][self.current_timestep]
+            prediction = self.model(X, training=False).numpy()[0][self.current_timestep]
             #print('pred time: ', time.process_time() - pred_start_time)
             prediction = prediction
             if self.binary:
@@ -169,7 +169,7 @@ class BaselineMusicGenerator:
             X = np.concatenate((self.melody, self.counter), axis=2)
             #prediction = np.random.rand((204))
             pred_start_time = time.process_time()
-            prediction = self.model(self.melody, training=False).numpy()[0][-1]
+            prediction = self.model(X, training=False).numpy()[0][-1]
             #print('pred time', time.process_time() - pred_start_time)
             if self.binary:
                 prediction[prediction >= self.threshold] = 1

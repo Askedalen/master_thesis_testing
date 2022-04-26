@@ -19,19 +19,19 @@ if __name__ == '__main__':
     if conf.testing:
         chord_model_filename = "chord_generator_test\\results\\tests\\full_model\models\chord_model.pb"
         poly_model_filename = "chord_generator_test\\results\\tests\\full_model\models\poly_model.pb"
-        baseline_model_filename = "chord_generator_test\\results\\tests\\baseline\\baseline_d220411_t2140/model.pb"
+        baseline_model_filename = "chord_generator_test\\results\\tests\\baseline_d220419_t1610/model.pb"
     else:
-        chord_model_filename = "results/tests/d220417_t1436/models/chord_model.pb"
-        poly_model_filename = "results/tests/d220417_t1938/models/poly_model.pb"
+        chord_model_filename = "results/tests/d220421_t1123/models/chord_model.pb"
+        poly_model_filename = "results/tests/d220422_t1154/models/poly_model.pb"
         baseline_model_filename = "results/tests/baseline_d220419_t1610/model.pb"
         
     chord_model = load_model(chord_model_filename)
     poly_model = load_model(poly_model_filename)
 
-    threshold=0.1
+    threshold=0.08
 
     print('Loading test data...')
-    melodies, targets = load.load_test_data(num_songs=100)
+    melodies, targets = load.load_test_data(num_songs=0)
     tp = 0
     tn = 0
     fp = 0
@@ -39,8 +39,11 @@ if __name__ == '__main__':
 
     print('Testing main model')
     generator = MusicGenerator(chord_model=chord_model, poly_model=poly_model, binary=True, threshold=threshold)
+    batch_time = time.process_time()
     for i in range(len(melodies)):
-        print(f'Analysing song {i} of {len(melodies)}') 
+        if i % 100 == 0:
+            print(f'Song {i} of {len(melodies)}. {time.process_time() - batch_time} seconds since last update.') 
+            batch_time = time.process_time()
         generator.reset()
         melody = melodies[i]
         target = targets[i]
@@ -72,8 +75,6 @@ if __name__ == '__main__':
     print('Total time:', time.process_time() - start_time)
     print()
 
-    exit()
-
     print('Evaluating baseline model')
     b_start_time = time.process_time()
     b_tp = 0
@@ -82,8 +83,12 @@ if __name__ == '__main__':
     b_fn = 0
     baseline_model = load_model(baseline_model_filename)
 
-    baseline_generator = BaselineMusicGenerator(baseline_model, binary=True)
+    baseline_generator = BaselineMusicGenerator(baseline_model, binary=True, threshold=threshold)
+    batch_time = time.process_time()
     for i in range(len(melodies)):
+        if i % 100 == 0:
+            print(f'Song {i} of {len(melodies)}. {time.process_time() - batch_time} seconds since last update.') 
+            batch_time = time.process_time()
         baseline_generator.reset()
         melody = melodies[i]
         target = targets[i]
@@ -108,7 +113,7 @@ if __name__ == '__main__':
     b_prec = b_tp/(b_tp + b_fp)
     b_rec = b_tp/(b_tp + b_fn)
 
-    print(tp, tn, fp, fn)
+    print(b_tp, b_tn, b_fp, b_fn)
     print('Accuracy:', b_acc)
     print('Precision:', b_prec)
     print('Recall:', b_rec)
