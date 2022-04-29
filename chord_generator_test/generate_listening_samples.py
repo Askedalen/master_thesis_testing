@@ -20,20 +20,21 @@ else:
     poly_model_filename = "results/tests/d220422_t1154/models/poly_model.pb"
     baseline_model_filename = "results/tests/baseline_d220419_t1610/model.pb"
 
-#chord_model = load_model(chord_model_filename)
-#poly_model = load_model(poly_model_filename)
-baseline_model = load_model(baseline_model_filename)
+chord_model = load_model(chord_model_filename)
+poly_model = load_model(poly_model_filename)
+#baseline_model = load_model(baseline_model_filename)
 
-threshold = 0.18
+threshold = 0.08
+#threshold = 0.18
 
-#generator = MusicGenerator(chord_model=chord_model, poly_model=poly_model, threshold=threshold)
-generator = BaselineMusicGenerator(baseline_model, threshold=threshold)
+generator = MusicGenerator(chord_model=chord_model, poly_model=poly_model, threshold=threshold)
+#generator = BaselineMusicGenerator(baseline_model, threshold=threshold)
 
-#melody_filenames = pickle.load(open('test_filenames.pickle', 'rb'))
+melody_filenames = pickle.load(open('test_filenames.pickle', 'rb'))
 
-#melody_filenames = melody_filenames[50:100]
+melody_filenames = melody_filenames[50:100]
 
-melody_filenames = ['33e5a8cf07044399f6b99635aee74244.pickle', '532c7ba6291d68c7803035f193a52b76.pickle', '8c8f35129e6f36d33bfa37c508b33c1e.pickle']
+#melody_filenames = ['33e5a8cf07044399f6b99635aee74244.pickle', '532c7ba6291d68c7803035f193a52b76.pickle', '8c8f35129e6f36d33bfa37c508b33c1e.pickle']
 
 for random_song in melody_filenames:
     generator.reset()
